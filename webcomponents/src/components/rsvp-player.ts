@@ -113,62 +113,6 @@ export class RsvpPlayer extends LitElement {
       width: 0%; /* Initial width */
       transition: width 0.1s linear;
     }
-
-    .settings-pane {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 10; /* Ensure it's on top */
-    }
-
-    .settings-pane div {
-      margin-bottom: 15px;
-      width: 80%;
-      max-width: 400px;
-    }
-
-    .settings-pane label {
-      display: block;
-      margin-bottom: 5px;
-      color: #FFFFFF;
-    }
-
-    .settings-pane textarea,
-    .settings-pane input[type="number"],
-    .settings-pane input[type="range"] {
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #555;
-      background-color: #333;
-      color: #FFFFFF;
-      box-sizing: border-box; /* Ensure padding doesn't increase width */
-    }
-    .settings-pane textarea {
-        min-height: 100px;
-    }
-
-    .settings-pane button {
-      background-color: #FF0000; /* mediaPlayer.controls.button.background.color.default - or a theme color */
-      color: #FFFFFF; /* mediaPlayer.controls.icon.color.default */
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    .settings-pane button:hover {
-        background-color: #CC0000;
-    }
   `;
 
   constructor() {
@@ -322,10 +266,6 @@ export class RsvpPlayer extends LitElement {
         break;
       case 'ArrowRight':
         this._stepForward();
-        break;
-      case 'f':
-      case 'F':
-        this._toggleFullscreen();
         break;
     }
   };
