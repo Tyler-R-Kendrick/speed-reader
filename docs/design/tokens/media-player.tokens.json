@@ -1,0 +1,92 @@
+{
+  "mediaPlayer": {
+    "background": {
+      "color": {
+        "default": {
+          "value": "#000000",
+          "type": "color"
+        }
+      }
+    },
+    "controls": {
+      "background": {
+        "color": {
+          "default": {
+            "value": "rgba(0, 0, 0, 0.8)",
+            "type": "color"
+          }
+        }
+      },
+      "icon": {
+        "color": {
+          "default": {
+            "value": "#FFFFFF",
+            "type": "color"
+          },
+          "hover": {
+            "value": "#CCCCCC",
+            "type": "color"
+          }
+        }
+      },
+      "button": {
+        "background": {
+          "color": {
+            "default": {
+              "value": "transparent",
+              "type": "color"
+            }
+          }
+        },
+        "padding": {
+          "value": "8px",
+          "type": "spacing"
+        }
+      }
+    },
+    "text": {
+      "color": {
+        "default": {
+          "value": "#FFFFFF",
+          "type": "color"
+        }
+      },
+      "fontSize": {
+        "default": {
+          "value": "14px",
+          "type": "fontSizes"
+        }
+      }
+    },
+    "progressBar": {
+      "background": {
+        "color": {
+          "default": {
+            "value": "rgba(255, 255, 255, 0.3)",
+            "type": "color"
+          }
+        }
+      },
+      "played": {
+        "color": {
+          "default": {
+            "value": "#FF0000",
+            "type": "color"
+          }
+        }
+      },
+      "buffered": {
+        "color": {
+          "default": {
+            "value": "rgba(255, 255, 255, 0.5)",
+            "type": "color"
+          }
+        }
+      },
+      "height": {
+        "value": "4px",
+        "type": "sizing"
+      }
+    }
+  }
+}

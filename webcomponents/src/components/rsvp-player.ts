@@ -29,9 +29,59 @@ export class RsvpPlayer extends LitElement {
     :host {
       display: block;
       text-align: center;
+      background-color: #000000; /* mediaPlayer.background.color.default */
+      color: #FFFFFF; /* mediaPlayer.text.color.default */
+      padding: 16px;
+      font-family: sans-serif;
+      min-height: 200px; /* Ensure a minimum height */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Center word vertically */
     }
+
     .word {
-      font-size: 2rem;
+      font-size: 3rem; /* Increased for better visibility */
+      font-weight: bold;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .controls {
+      background-color: rgba(0, 0, 0, 0.8); /* mediaPlayer.controls.background.color.default */
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px; /* Added for softer corners */
+      margin-top: 16px; /* Space between word and controls */
+    }
+
+    .controls button {
+      background-color: transparent; /* mediaPlayer.controls.button.background.color.default */
+      color: #FFFFFF; /* mediaPlayer.controls.icon.color.default */
+      border: none;
+      padding: 8px 12px; /* mediaPlayer.controls.button.padding.value (adjusted for better feel) */
+      cursor: pointer;
+      font-size: 1rem; /* Adjusted for button text/icons */
+      border-radius: 4px; /* Added for softer button corners */
+    }
+
+    .controls button:hover {
+      color: #CCCCCC; /* mediaPlayer.controls.icon.color.hover */
+      background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+    }
+
+    .wpm {
+      color: #FFFFFF; /* mediaPlayer.text.color.default */
+      font-size: 14px; /* mediaPlayer.text.fontSize.default */
+      margin: 0 10px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
     }
   `;
 
@@ -44,14 +94,38 @@ export class RsvpPlayer extends LitElement {
 
   render() {
     return html`
-      <div class="controls">
-        <button @click=${this._onPlayPause}>
-          ${this.playing ? 'Pause' : 'Play'}
-        </button>
-        <span class="wpm">${this.wpm} WPM</span>
-      </div>
       <div class="word" part="word">
-        ${this.words.length > 0 ? this.words[this.index] : ''}
+        ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <button @click=${this._onPlayPause} aria-label=${this.playing ? 'Pause' : 'Play'}>
+            ${this.playing ? 
+              html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` : 
+              html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`
+            }
+          </button>
+          <button @click=${this._rewind} aria-label="Rewind">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+          </button>
+        </div>
+        <span class="wpm">${this.wpm} WPM</span>
+        <div class="control-group">
+          <button @click=${this._decreaseSpeed} aria-label="Decrease speed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2z"/></svg>
+          </button>
+          <button @click=${this._increaseSpeed} aria-label="Increase speed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
+          <button @click=${this._toggleFullscreen} aria-label="Toggle Fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              ${!document.fullscreenElement ?
+                html`<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>` :
+                html`<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>`
+              }
+            </svg>
+          </button>
+        </div>
       </div>
     `;
   }
