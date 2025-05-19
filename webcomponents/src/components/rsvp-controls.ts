@@ -2,76 +2,84 @@ import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 
 export class RsvpControls extends LitElement {
-  @property({ type: Boolean }) playing: boolean = false;
-  @property({ type: Number }) wpm: number = 300;
+    static properties = {
+        playing: { type: Boolean },
+        wpm: { type: Number },
+    };
 
-  static styles = css`
-    .controls {
-      background-color: rgba(0, 0, 0, 0.8);
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-radius: 8px;
-      margin-top: 16px;
-    }
-    .controls button {
-      background-color: transparent;
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 4px;
-    }
-    .controls button:hover {
-      color: #CCCCCC;
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-    .wpm {
-      color: #FFFFFF;
-      font-size: 14px;
-      margin: 0 10px;
-    }
-    .control-group {
-      display: flex;
-      align-items: center;
-    }
-  `;
+    @property({ type: Boolean }) playing: boolean = false;
+    @property({ type: Number }) wpm: number = 300;
 
-  private _onPlayPause() {
-    this.dispatchEvent(new CustomEvent('play-pause'));
-  }
-  private _onRewind() {
-    this.dispatchEvent(new CustomEvent('rewind'));
-  }
-  private _onFastForward() {
-    this.dispatchEvent(new CustomEvent('fast-forward'));
-  }
-  private _onDecreaseSpeed() {
-    this.dispatchEvent(new CustomEvent('decrease-speed'));
-  }
-  private _onIncreaseSpeed() {
-    this.dispatchEvent(new CustomEvent('increase-speed'));
-  }
-  private _onToggleFullscreen() {
-    this.dispatchEvent(new CustomEvent('toggle-fullscreen'));
-  }
-  private _onToggleSettings() {
-    this.dispatchEvent(new CustomEvent('toggle-settings'));
-  }
+    static styles = css`
+        .controls {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 8px;
+        margin-top: 16px;
+        }
+        .controls button {
+        background-color: transparent;
+        color: #FFFFFF;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 1rem;
+        border-radius: 4px;
+        }
+        .controls button:hover {
+        color: #CCCCCC;
+        background-color: rgba(255, 255, 255, 0.1);
+        }
+        .wpm {
+        color: #FFFFFF;
+        font-size: 14px;
+        margin: 0 10px;
+        }
+        .control-group {
+        display: flex;
+        align-items: center;
+        }
+    `;
 
-  render() {
-    const playPauseIcon = this.playing
-      ? html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
-      : html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-    const playPauseLabel = this.playing ? 'Pause' : 'Play';
+    private _dispatchEvent(eventName: string) {
+        this.dispatchEvent(new CustomEvent(eventName));
+    }
+    private _onPlayPause() {
+        this._dispatchEvent('play-pause');
+    }
+    private _onRewind() {
+        this._dispatchEvent('rewind');
+    }
+    private _onFastForward() {
+        this._dispatchEvent('fast-forward');
+    }
+    private _onDecreaseSpeed() {
+        this._dispatchEvent('decrease-speed');
+    }
+    private _onIncreaseSpeed() {
+        this._dispatchEvent('increase-speed');
+    }
+    private _onToggleFullscreen() {
+        this._dispatchEvent('toggle-fullscreen');
+    }
+    private _onToggleSettings() {
+        this._dispatchEvent('toggle-settings');
+    }
 
-    // paths for fullscreen icons
-    const enterFullscreenPath = "M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zm-2-4h2V7h-3V5h5v5z";
-    const exitFullscreenPath = "M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z";
+    render() {
+        const playPauseIcon = this.playing
+            ? html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+            : html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+        const playPauseLabel = this.playing ? 'Pause' : 'Play';
 
-    return html`
+        // paths for fullscreen icons
+        const enterFullscreenPath = "M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zm-2-4h2V7h-3V5h5v5z";
+        const exitFullscreenPath = "M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z";
+
+        return html`
       <div class="controls">
         <div class="control-group">
           <button @click=${this._onPlayPause} aria-label=${playPauseLabel}>
@@ -105,7 +113,7 @@ export class RsvpControls extends LitElement {
         </div>
       </div>
     `;
-  }
+    }
 }
 
 customElements.define('rsvp-controls', RsvpControls);
