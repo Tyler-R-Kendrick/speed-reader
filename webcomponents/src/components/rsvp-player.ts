@@ -5,20 +5,28 @@ export class RsvpPlayer extends LitElement {
   static properties = {
     text: { type: String },
     wpm: { type: Number },
+    wordFontSize: { type: Number }, // Added for word font size configuration
     playing: { type: Boolean },
     words: { type: Array },
     index: { type: Number },
+    showSettingsPane: { type: Boolean },
   };
   /** Input text for RSVP session */
   @property({ type: String }) text!: string;
   /** Words per minute speed */
   @property({ type: Number }) wpm!: number;
+  /** Word font size in rem */
+  @property({ type: Number }) wordFontSize: number = 3; // Default font size in rem
+
   /** Playback state */
-  @state private playing: boolean = false;
+  @state private playing: boolean;
   /** Parsed words from text */
-  @state private words: string[] = [];
+  @state private words: string[];
   /** Current word index */
-  @state private index: number = 0;
+  @state private index: number;
+  /** Visibility state for settings pane */
+  @state private showSettingsPane: boolean;
+
   private timerId?: number;
   private static readonly MIN_WPM = 200;
   private static readonly MAX_WPM = 350;
@@ -38,10 +46,10 @@ export class RsvpPlayer extends LitElement {
       display: flex;
       flex-direction: column;
       justify-content: center; /* Center word vertically */
+      position: relative; /* Needed for settings pane positioning */
     }
 
     .word {
-      font-size: 3rem; /* Increased for better visibility */
       font-weight: bold;
       flex-grow: 1;
       display: flex;
@@ -101,13 +109,71 @@ export class RsvpPlayer extends LitElement {
       width: 0%; /* Initial width */
       transition: width 0.1s linear;
     }
+
+    .settings-pane {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10; /* Ensure it's on top */
+    }
+
+    .settings-pane div {
+      margin-bottom: 15px;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .settings-pane label {
+      display: block;
+      margin-bottom: 5px;
+      color: #FFFFFF;
+    }
+
+    .settings-pane textarea,
+    .settings-pane input[type="number"],
+    .settings-pane input[type="range"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background-color: #333;
+      color: #FFFFFF;
+      box-sizing: border-box; /* Ensure padding doesn't increase width */
+    }
+    .settings-pane textarea {
+        min-height: 100px;
+    }
+
+    .settings-pane button {
+      background-color: #FF0000; /* mediaPlayer.controls.button.background.color.default - or a theme color */
+      color: #FFFFFF; /* mediaPlayer.controls.icon.color.default */
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .settings-pane button:hover {
+        background-color: #CC0000;
+    }
   `;
 
   constructor() {
     super();
-    // @state properties (playing, words, index) are now initialized at their declaration.
-    // Do NOT initialize @property fields (text, wpm) here.
-    // They will be initialized from attributes or in connectedCallback for defaults.
+    // Initialize reactive state properties
+    this.playing = false;
+    this.words = [];
+    this.index = 0;
+    this.showSettingsPane = false;
   }
 
   private _handleFullscreenChange = () => {
@@ -137,45 +203,83 @@ export class RsvpPlayer extends LitElement {
     const progressPercent = this.words.length > 0 ? ((this.index + 1) / this.words.length) * 100 : 0;
 
     return html`
-      <div class="word" part="word">
-        ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
-      </div>
-
-      <div class="progress-bar-container" @click=${this._onProgressBarClick}>
-        <div class="progress-bar" style="width: ${progressPercent}%;"></div>
-      </div>
-
-      <div class="controls">
-        <div class="control-group">
-          <button @click=${this._onPlayPause} aria-label=${playPauseLabel}>
-            ${playPauseIcon}
-          </button>
-          <button @click=${this._rewind} aria-label="Rewind">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
-          </button>
-          <button @click=${this._fastForward} aria-label="Fast Forward">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="m4 18 8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
-          </button>
+      ${this.showSettingsPane ? this._renderSettingsPane() : html`
+        <div class="word" part="word" style="font-size: ${this.wordFontSize}rem;">
+          ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
         </div>
-        <span class="wpm">${this.wpm} WPM</span>
-        <div class="control-group">
-          <button @click=${this._decreaseSpeed} aria-label="Decrease speed">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2z"/></svg>
-          </button>
-          <button @click=${this._increaseSpeed} aria-label="Increase speed">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-          </button>
-          <button @click=${this._toggleFullscreen} aria-label="Toggle Fullscreen">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              ${document.fullscreenElement === this ?
-                html`<path d="${exitFullscreenPath}"/>` :
-                html`<path d="${enterFullscreenPath}"/>`
-              }
-            </svg>
-          </button>
+
+        <div class="progress-bar-container" @click=${this._onProgressBarClick}>
+          <div class="progress-bar" style="width: ${progressPercent}%;"></div>
         </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <button @click=${this._onPlayPause} aria-label=${playPauseLabel}>
+              ${playPauseIcon}
+            </button>
+            <button @click=${this._rewind} aria-label="Rewind">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+            </button>
+            <button @click=${this._fastForward} aria-label="Fast Forward">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="m4 18 8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+            </button>
+          </div>
+          <span class="wpm">${this.wpm} WPM</span>
+          <div class="control-group">
+            <button @click=${this._decreaseSpeed} aria-label="Decrease speed">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2z"/></svg>
+            </button>
+            <button @click=${this._increaseSpeed} aria-label="Increase speed">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button @click=${this._toggleFullscreen} aria-label="Toggle Fullscreen">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                ${document.fullscreenElement === this ?
+                  html`<path d="${exitFullscreenPath}"/>` :
+                  html`<path d="${enterFullscreenPath}"/>`
+                }
+              </svg>
+            </button>
+            <button @click=${this._toggleSettingsPane} aria-label="Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+            </button>
+          </div>
+        </div>
+      `}
+    `;
+  }
+
+  private _renderSettingsPane() {
+    return html`
+      <div class="settings-pane">
+        <div>
+          <label for="text-input">Text to Display:</label>
+          <textarea id="text-input" .value=${this.text} @input=${this._handleTextInput}></textarea>
+        </div>
+        <div>
+          <label for="font-size-input">Font Size (rem): ${this.wordFontSize}</label>
+          <div class="font-size-control" style="display: flex; align-items: center; gap: 8px;">
+            <input type="range" id="font-size-input" min="1" max="10" step="0.5" .value=${this.wordFontSize.toString()} @input=${this._handleFontSizeInput}>
+            <input type="number" id="font-size-number-input" min="1" max="10" step="0.1" .value=${this.wordFontSize.toString()} @input=${this._handleFontSizeInput} style="width: 60px;">
+          </div>
+        </div>
+        <button @click=${this._toggleSettingsPane}>Close Settings</button>
       </div>
     `;
+  }
+
+  private _toggleSettingsPane() {
+    this.showSettingsPane = !this.showSettingsPane;
+  }
+
+  private _handleTextInput(e: Event) {
+    const textarea = e.target as HTMLTextAreaElement;
+    this.text = textarea.value;
+  }
+
+  private _handleFontSizeInput(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.wordFontSize = parseFloat(input.value);
   }
 
   private _onPlayPause() {
@@ -336,6 +440,25 @@ export class RsvpPlayer extends LitElement {
     } else {
       this.requestFullscreen();
     }
+  }
+
+  private _onTextInput(e: Event) {
+    const target = e.target as HTMLTextAreaElement;
+    this.text = target.value;
+  }
+
+  private _onWpmInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.wpm = parseInt(target.value, 10);
+  }
+
+  private _onFontSizeInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.wordFontSize = parseFloat(target.value);
+  }
+
+  private _onSettingsSave() {
+    this.showSettingsPane = false;
   }
 }
 
