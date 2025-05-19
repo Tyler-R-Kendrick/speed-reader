@@ -1,0 +1,9 @@
+{
+  "typography": {
+    "fontFamily": { "value": "'Inter', 'Helvetica Neue', Arial, sans-serif", "type": "fontFamily", "description": "Primary font family" },
+    "fontSizeBase": { "value": "16px", "type": "dimension", "description": "Base font size" },
+    "fontWeightRegular": { "value": "400", "type": "fontWeight", "description": "Regular font weight" },
+    "fontWeightBold": { "value": "700", "type": "fontWeight", "description": "Bold font weight" },
+    "lineHeightBase": { "value": "1.5", "type": "number", "description": "Base line height" }
+  }
+}

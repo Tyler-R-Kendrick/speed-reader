@@ -1,0 +1,7 @@
+{
+  "radius": {
+    "sm": { "value": "2px", "type": "dimension", "description": "Small border radius" },
+    "md": { "value": "4px", "type": "dimension", "description": "Medium border radius" },
+    "lg": { "value": "8px", "type": "dimension", "description": "Large border radius" }
+  }
+}

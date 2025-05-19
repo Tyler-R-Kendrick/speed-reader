@@ -1,0 +1,11 @@
+{
+  "color": {
+    "primary": { "value": "#1976d2", "type": "color", "description": "Primary brand color" },
+    "secondary": { "value": "#ff9800", "type": "color", "description": "Secondary accent color" },
+    "background": { "value": "#ffffff", "type": "color", "description": "Default background color" },
+    "surface": { "value": "#f5f5f5", "type": "color", "description": "Surface background color" },
+    "text": { "value": "#212121", "type": "color", "description": "Primary text color" },
+    "textSecondary": { "value": "#757575", "type": "color", "description": "Secondary text color" },
+    "error": { "value": "#d32f2f", "type": "color", "description": "Error color" }
+  }
+}

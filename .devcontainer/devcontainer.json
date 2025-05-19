@@ -1,0 +1,13 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "postCreateCommand": "npm install -g @openai/codex",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot",
+                "ms-vscode.vscode-websearchforcopilot",
+                "ms-vscode.vscode-copilot-vision"
+            ]
+        }
+    }
+}
