@@ -1,7 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import './rsvp-settings';
 
 export class RsvpPlayer extends LitElement {
+  // Expose only external properties; internal state managed via @state
   static properties = {
     text: { type: String },
     wpm: { type: Number },
@@ -25,7 +27,7 @@ export class RsvpPlayer extends LitElement {
   /** Current word index */
   @state private index: number;
   /** Visibility state for settings pane */
-  @state private showSettingsPane: boolean;
+  @state private showSettingsPane: boolean = false;
 
   private timerId?: number;
   private static readonly MIN_WPM = 200;
@@ -203,7 +205,15 @@ export class RsvpPlayer extends LitElement {
     const progressPercent = this.words.length > 0 ? ((this.index + 1) / this.words.length) * 100 : 0;
 
     return html`
-      ${this.showSettingsPane ? this._renderSettingsPane() : html`
+      ${this.showSettingsPane ? html`
+        <rsvp-settings
+          .text=${this.text}
+          .wordFontSize=${this.wordFontSize}
+          @text-change=${(e: CustomEvent) => this.text = e.detail}
+          @font-size-change=${(e: CustomEvent) => this.wordFontSize = e.detail}
+          @close=${this._toggleSettingsPane}
+        ></rsvp-settings>
+      ` : html`
         <div class="word" part="word" style="font-size: ${this.wordFontSize}rem;">
           ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
         </div>
