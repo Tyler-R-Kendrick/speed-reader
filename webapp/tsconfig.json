@@ -4,15 +4,10 @@
     "module": "esnext",
     "lib": ["DOM", "esnext"],
     "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "strict": true,
-    "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "src",
     "esModuleInterop": true,
-    "useDefineForClassFields": false,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "jest.setup.ts"]
+  "include": ["src"]
 }
