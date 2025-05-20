@@ -1,0 +1,17 @@
+{
+  "name": "speed-reader-extension",
+  "version": "0.1.0",
+  "description": "Chrome extension for speed reading web pages.",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:webcomponents": "(cd ../webcomponents && npm install --silent && npm run build --silent)",
+    "build:ts": "tsc -p .",
+    "build:copy-player": "mkdir -p dist/rsvp_assets && cp ../webcomponents/dist/assets/index-*.js dist/rsvp_assets/rsvp-player.js",
+    "build:copy-assets": "mkdir -p dist && cp manifest.json popup.html dist/ && ([ -d images ] && cp -R images dist/ || echo \"Warning: 'images' directory not found, not copying icons.\")",
+    "build": "npm run clean && npm run build:webcomponents && npm run build:ts && npm run build:copy-player && npm run build:copy-assets"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/chrome": "^0.0.200"
+  }
+}
