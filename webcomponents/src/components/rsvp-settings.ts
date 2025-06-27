@@ -126,6 +126,59 @@ export class RsvpSettings extends LitElement {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
+  private _touchStartY = 0;
+
+  private _onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      this._touchStartY = e.clientY;
+    }
+  };
+
+  private _onPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      const deltaY = e.clientY - this._touchStartY;
+      if (deltaY > 50) {
+        e.preventDefault();
+        this._onClose();
+      }
+    }
+  };
+
+  private _onTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0] ?? e.changedTouches[0];
+    if (touch) {
+      this._touchStartY = touch.clientY;
+    }
+  };
+
+  private _onTouchEnd = (e: TouchEvent) => {
+    const touch = e.changedTouches[0] ?? e.touches[0];
+    if (!touch) {
+      return;
+    }
+    const deltaY = touch.clientY - this._touchStartY;
+    if (deltaY > 50) {
+      e.preventDefault();
+      this._onClose();
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('pointerdown', this._onPointerDown);
+    this.addEventListener('pointerup', this._onPointerUp);
+    this.addEventListener('touchstart', this._onTouchStart, { passive: false });
+    this.addEventListener('touchend', this._onTouchEnd, { passive: false });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('pointerdown', this._onPointerDown);
+    this.removeEventListener('pointerup', this._onPointerUp);
+    this.removeEventListener('touchstart', this._onTouchStart);
+    this.removeEventListener('touchend', this._onTouchEnd);
+  }
+
   render() {
     const pasteActive = this.mode === 'paste';
     return html`
