@@ -42,6 +42,14 @@ export class RsvpControls extends LitElement {
         display: flex;
         align-items: center;
         }
+
+        @media (max-width: 600px) {
+        .controls {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        }
     `;
 
     private _dispatchEvent = (eventName: string) => {
