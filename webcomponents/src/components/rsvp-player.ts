@@ -23,13 +23,13 @@ export class RsvpPlayer extends LitElement {
   @property({ type: Number }) wordFontSize: number = 3; // Default font size in rem
 
   /** Playback state */
-  @state private playing: boolean;
+  @state() private playing: boolean;
   /** Parsed words from text */
-  @state private words: string[];
+  @state() private words: string[];
   /** Current word index */
-  @state private index: number;
+  @state() private index: number;
   /** Visibility state for settings pane */
-  @state private showSettingsPane: boolean = false;
+  @state() private showSettingsPane: boolean = false;
 
   private timerId?: number;
   private static readonly MIN_WPM = 200;
