@@ -9,3 +9,5 @@ This project prefers clean, idiomatic TypeScript. When using Copilot suggestions
 - Run `npm run lint` and `npm test` to verify before committing.
 - Respect the DRY, SRP and KISS principles. Refactor Boy Scout style and lean on the linter to catch smells from SonarJS and Unicorn. Run the linter when editing existing files and tidy up warnings as you go.
 - Embrace Uncle Bob's Clean Code guidelines. Keep functions short, use expressive names, and aim for modular design.
+- Always sync with origin or the PR's destination branch (default `main`) before committing and resolve any merge conflicts.
+- Keep documentation up to date with the latest code and record design deviations under `docs/design/decisions/`.

@@ -11,3 +11,10 @@ This repository uses TypeScript and Lit to build web components, a browser exten
 - When adding new features, include unit tests and ensure existing tests keep ≥90% coverage.
 - GitHub Actions run `npm run lint` and `npm test`. Make sure they succeed locally before pushing.
 
+- Always `git pull` from origin or merge the PR's destination branch before beginning a task. If origin isn't available, use `main`. Resolve any merge conflicts first.
+- Record design decisions that deviate from existing docs under `docs/design/decisions/`.
+- Take a test-driven approach, especially for new UI behaviour.
+- Document preferences from conversations, noting whether they are standards or one-off exceptions.
+- Override existing features gracefully, e.g. intercept swipe gestures so mobile browsers don't navigate back.
+- Ensure documentation (including `README.md`) stays in sync with the latest code.
+
