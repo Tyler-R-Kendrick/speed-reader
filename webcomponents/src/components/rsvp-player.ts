@@ -31,6 +31,9 @@ export class RsvpPlayer extends LitElement {
   /** Visibility state for settings pane */
   @state() private showSettingsPane: boolean = false;
 
+  /** Track Y coordinate for swipe gesture */
+  private _touchStartY = 0;
+
   private timerId?: number;
   private static readonly MIN_WPM = 200;
   private static readonly MAX_WPM = 350;
@@ -137,6 +140,21 @@ export class RsvpPlayer extends LitElement {
     this.requestUpdate(); // Ensure UI updates when fullscreen state changes
   }
 
+  private _onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      this._touchStartY = e.clientY;
+    }
+  };
+
+  private _onPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      const deltaY = this._touchStartY - e.clientY;
+      if (deltaY > 50 && !this.showSettingsPane) {
+        this._toggleSettingsPane();
+      }
+    }
+  };
+
   render() {
     const isEnded = !this.playing && this.words.length > 0 && this.index === this.words.length - 1;
     // Play/pause icon and label logic is now primarily within rsvp-controls
@@ -238,11 +256,15 @@ export class RsvpPlayer extends LitElement {
 
     window.addEventListener('keydown', this._onKeyDown);
     this.addEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.addEventListener('pointerdown', this._onPointerDown);
+    this.addEventListener('pointerup', this._onPointerUp);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKeyDown);
     this.removeEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.removeEventListener('pointerdown', this._onPointerDown);
+    this.removeEventListener('pointerup', this._onPointerUp);
     this._clearTimer();
   }
 
