@@ -326,7 +326,7 @@ export class RsvpPlayer extends LitElement {
     }
 
     window.addEventListener('keydown', this._onKeyDown);
-    this.addEventListener('fullscreenchange', this._handleFullscreenChange);
+    document.addEventListener('fullscreenchange', this._handleFullscreenChange);
     this.addEventListener('pointerdown', this._onSettingsPointerDown);
     this.addEventListener('pointerup', this._onSettingsPointerUp);
     this.addEventListener('touchstart', this._onSettingsTouchStart, { passive: false });
@@ -335,7 +335,7 @@ export class RsvpPlayer extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKeyDown);
-    this.removeEventListener('fullscreenchange', this._handleFullscreenChange);
+    document.removeEventListener('fullscreenchange', this._handleFullscreenChange);
     this.removeEventListener('pointerdown', this._onSettingsPointerDown);
     this.removeEventListener('pointerup', this._onSettingsPointerUp);
     this.removeEventListener('touchstart', this._onSettingsTouchStart);
