@@ -31,6 +31,9 @@ export class RsvpPlayer extends LitElement {
   /** Visibility state for settings pane */
   @state() private showSettingsPane: boolean = false;
 
+  /** Track Y coordinate for swipe gesture */
+  private _touchStartY = 0;
+
   private timerId?: number;
   private static readonly MIN_WPM = 100;
   private static readonly MAX_WPM = 800;
@@ -139,6 +142,41 @@ export class RsvpPlayer extends LitElement {
   private _handleFullscreenChange = () => {
     this.requestUpdate(); // Ensure UI updates when fullscreen state changes
   }
+
+  private _onSettingsPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      this._touchStartY = e.clientY;
+    }
+  };
+
+  private _onSettingsPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      const deltaY = this._touchStartY - e.clientY;
+      if (deltaY > 50 && !this.showSettingsPane) {
+        e.preventDefault();
+        this._toggleSettingsPane();
+      }
+    }
+  };
+
+  private _onSettingsTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0] ?? e.changedTouches[0];
+    if (touch) {
+      this._touchStartY = touch.clientY;
+    }
+  };
+
+  private _onSettingsTouchEnd = (e: TouchEvent) => {
+    const touch = e.changedTouches[0] ?? e.touches[0];
+    if (!touch) {
+      return;
+    }
+    const deltaY = this._touchStartY - touch.clientY;
+    if (deltaY > 50 && !this.showSettingsPane) {
+      e.preventDefault();
+      this._toggleSettingsPane();
+    }
+  };
 
   render() {
     const isEnded = !this.playing && this.words.length > 0 && this.index === this.words.length - 1;
@@ -289,11 +327,19 @@ export class RsvpPlayer extends LitElement {
 
     window.addEventListener('keydown', this._onKeyDown);
     this.addEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.addEventListener('pointerdown', this._onSettingsPointerDown);
+    this.addEventListener('pointerup', this._onSettingsPointerUp);
+    this.addEventListener('touchstart', this._onSettingsTouchStart, { passive: false });
+    this.addEventListener('touchend', this._onSettingsTouchEnd, { passive: false });
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKeyDown);
     this.removeEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.removeEventListener('pointerdown', this._onSettingsPointerDown);
+    this.removeEventListener('pointerup', this._onSettingsPointerUp);
+    this.removeEventListener('touchstart', this._onSettingsTouchStart);
+    this.removeEventListener('touchend', this._onSettingsTouchEnd);
     this._clearTimer();
   }
 
