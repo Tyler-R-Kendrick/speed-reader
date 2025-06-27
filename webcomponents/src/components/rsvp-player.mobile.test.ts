@@ -1,4 +1,6 @@
+/* eslint-disable max-lines-per-function */
 import '@testing-library/jest-dom';
+import { jest } from '@jest/globals';
 import { fireEvent, within } from '@testing-library/dom';
 import { RsvpPlayer } from './rsvp-player';
 
@@ -70,6 +72,16 @@ describe('RsvpPlayer mobile layout', () => {
       fireEvent.touchEnd(word, { changedTouches: [{ clientX: 90 }] });
       await el.updateComplete;
       expect((el as any).index).toBe(7);
+    });
+
+    it('prevents default browser swipe navigation', async () => {
+      const el = document.querySelector<RsvpPlayer>(TAG)!;
+      await el.updateComplete;
+      const word = el.shadowRoot!.querySelector('.word') as HTMLElement;
+      const ev = new TouchEvent('touchstart', { cancelable: true, changedTouches: [ { clientX: 50 } ] } as any);
+      const prevent = jest.spyOn(ev, 'preventDefault');
+      word.dispatchEvent(ev);
+      expect(prevent).toHaveBeenCalled();
     });
   });
 });

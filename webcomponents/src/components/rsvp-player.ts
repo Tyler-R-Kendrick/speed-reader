@@ -163,6 +163,7 @@ export class RsvpPlayer extends LitElement {
           style="font-size: ${this.wordFontSize}rem;"
           @click=${this._onAreaClick}
           @touchstart=${this._onTouchStart}
+          @touchmove=${this._onTouchMove}
           @touchend=${this._onTouchEnd}
         >
           ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
@@ -222,6 +223,11 @@ export class RsvpPlayer extends LitElement {
 
   private _onTouchStart(e: TouchEvent) {
     this.touchStartX = e.changedTouches[0].clientX;
+    e.preventDefault();
+  }
+
+  private _onTouchMove(e: TouchEvent) {
+    e.preventDefault();
   }
 
   private _onTouchEnd(e: TouchEvent) {
