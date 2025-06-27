@@ -31,12 +31,18 @@ export class RsvpPlayer extends LitElement {
   /** Visibility state for settings pane */
   @state() private showSettingsPane: boolean = false;
 
+  /** Track Y coordinate for swipe gesture */
+  private _touchStartY = 0;
+
   private timerId?: number;
   private static readonly MIN_WPM = 100;
   private static readonly MAX_WPM = 800;
   private static readonly STEP = 50;
   private static readonly REWIND_WORDS = 5;
   private static readonly FAST_FORWARD_WORDS = 5; // Added for fast forward functionality
+  private static readonly SWIPE_THRESHOLD = 30;
+
+  private touchStartX: number | null = null;
 
   static styles = css`
     :host {
@@ -137,6 +143,41 @@ export class RsvpPlayer extends LitElement {
     this.requestUpdate(); // Ensure UI updates when fullscreen state changes
   }
 
+  private _onSettingsPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      this._touchStartY = e.clientY;
+    }
+  };
+
+  private _onSettingsPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      const deltaY = this._touchStartY - e.clientY;
+      if (deltaY > 50 && !this.showSettingsPane) {
+        e.preventDefault();
+        this._toggleSettingsPane();
+      }
+    }
+  };
+
+  private _onSettingsTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0] ?? e.changedTouches[0];
+    if (touch) {
+      this._touchStartY = touch.clientY;
+    }
+  };
+
+  private _onSettingsTouchEnd = (e: TouchEvent) => {
+    const touch = e.changedTouches[0] ?? e.touches[0];
+    if (!touch) {
+      return;
+    }
+    const deltaY = this._touchStartY - touch.clientY;
+    if (deltaY > 50 && !this.showSettingsPane) {
+      e.preventDefault();
+      this._toggleSettingsPane();
+    }
+  };
+
   render() {
     const isEnded = !this.playing && this.words.length > 0 && this.index === this.words.length - 1;
     // Play/pause icon and label logic is now primarily within rsvp-controls
@@ -154,7 +195,15 @@ export class RsvpPlayer extends LitElement {
           @close=${this._toggleSettingsPane}
         ></rsvp-settings>
       ` : html`
-        <div class="word" part="word" style="font-size: ${this.wordFontSize}rem;">
+        <div
+          class="word"
+          part="word"
+          style="font-size: ${this.wordFontSize}rem;"
+          @click=${this._onAreaClick}
+          @touchstart=${this._onTouchStart}
+          @touchmove=${this._onTouchMove}
+          @touchend=${this._onTouchEnd}
+        >
           ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
         </div>
 
@@ -205,6 +254,46 @@ export class RsvpPlayer extends LitElement {
     // Dispatch event after state change, so listeners get the new state
     this.dispatchEvent(new CustomEvent(this.playing ? 'play' : 'pause'));
   }
+
+  private _onAreaClick() {
+    this._onPlayPause();
+  }
+
+  private _onTouchStart(e: TouchEvent) {
+    this.touchStartX = e.changedTouches[0].clientX;
+    e.preventDefault();
+  }
+
+  private _onTouchMove(e: TouchEvent) {
+    e.preventDefault();
+  }
+
+  private _onTouchEnd(e: TouchEvent) {
+    if (this.touchStartX === null) {
+      return;
+    }
+    const endX = e.changedTouches[0].clientX;
+    const diff = endX - this.touchStartX;
+    this.touchStartX = null;
+    e.preventDefault();
+    if (Math.abs(diff) > RsvpPlayer.SWIPE_THRESHOLD) {
+      if (diff < 0) {
+        this._rewind();
+      } else {
+        this._fastForward();
+      }
+      return;
+    }
+
+    const width = this.clientWidth;
+    if (endX < width * 0.3) {
+      this._decreaseSpeed();
+    } else if (endX > width * 0.7) {
+      this._increaseSpeed();
+    } else {
+      this._onPlayPause();
+    }
+  }
   
   private _onProgressBarClick(e: MouseEvent) {
     if (this.words.length === 0) return;
@@ -238,11 +327,19 @@ export class RsvpPlayer extends LitElement {
 
     window.addEventListener('keydown', this._onKeyDown);
     this.addEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.addEventListener('pointerdown', this._onSettingsPointerDown);
+    this.addEventListener('pointerup', this._onSettingsPointerUp);
+    this.addEventListener('touchstart', this._onSettingsTouchStart, { passive: false });
+    this.addEventListener('touchend', this._onSettingsTouchEnd, { passive: false });
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKeyDown);
     this.removeEventListener('fullscreenchange', this._handleFullscreenChange);
+    this.removeEventListener('pointerdown', this._onSettingsPointerDown);
+    this.removeEventListener('pointerup', this._onSettingsPointerUp);
+    this.removeEventListener('touchstart', this._onSettingsTouchStart);
+    this.removeEventListener('touchend', this._onSettingsTouchEnd);
     this._clearTimer();
   }
 
