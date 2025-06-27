@@ -150,8 +150,21 @@ export class RsvpPlayer extends LitElement {
     if (e.pointerType === 'touch') {
       const deltaY = this._touchStartY - e.clientY;
       if (deltaY > 50 && !this.showSettingsPane) {
+        e.preventDefault();
         this._toggleSettingsPane();
       }
+    }
+  };
+
+  private _onTouchStart = (e: TouchEvent) => {
+    this._touchStartY = e.touches[0].clientY;
+  };
+
+  private _onTouchEnd = (e: TouchEvent) => {
+    const deltaY = this._touchStartY - e.changedTouches[0].clientY;
+    if (deltaY > 50 && !this.showSettingsPane) {
+      e.preventDefault();
+      this._toggleSettingsPane();
     }
   };
 
@@ -258,6 +271,8 @@ export class RsvpPlayer extends LitElement {
     this.addEventListener('fullscreenchange', this._handleFullscreenChange);
     this.addEventListener('pointerdown', this._onPointerDown);
     this.addEventListener('pointerup', this._onPointerUp);
+    this.addEventListener('touchstart', this._onTouchStart, { passive: false });
+    this.addEventListener('touchend', this._onTouchEnd, { passive: false });
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -265,6 +280,8 @@ export class RsvpPlayer extends LitElement {
     this.removeEventListener('fullscreenchange', this._handleFullscreenChange);
     this.removeEventListener('pointerdown', this._onPointerDown);
     this.removeEventListener('pointerup', this._onPointerUp);
+    this.removeEventListener('touchstart', this._onTouchStart);
+    this.removeEventListener('touchend', this._onTouchEnd);
     this._clearTimer();
   }
 
