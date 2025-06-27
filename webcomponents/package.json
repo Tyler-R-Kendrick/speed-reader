@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js",
-    "lint:js": "eslint src/**/*.{ts,js}",
-    "lint:css": "stylelint src/**/*.css",
+    "lint:js": "eslint --max-warnings 0 src/**/*.{ts,js}",
+    "lint:css": "stylelint src/**/*.css --max-warnings 0",
     "lint": "npm run lint:js && npm run lint:css"
   },
   "dependencies": {
