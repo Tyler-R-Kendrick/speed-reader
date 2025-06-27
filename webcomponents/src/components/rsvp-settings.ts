@@ -64,15 +64,22 @@ export class RsvpSettings extends LitElement {
     .settings-pane input[type="range"],
     .settings-pane input[type="url"] {
       width: 100%;
-      padding: 8px;
-      border-radius: 4px;
+      padding: var(--sr-spacing-sm, 8px);
+      border-radius: var(--sr-radius-md, 4px);
       border: 1px solid #555;
       background-color: #333;
       color: #FFFFFF;
       box-sizing: border-box;
     }
     .settings-pane textarea {
-      min-height: 100px;
+      min-height: 40vh;
+      max-height: 60vh;
+      resize: vertical;
+    }
+    @media (max-width: 600px) {
+      .settings-pane textarea {
+        min-height: 30vh;
+      }
     }
 
     .settings-pane button {
