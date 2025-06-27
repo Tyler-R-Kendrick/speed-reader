@@ -37,6 +37,9 @@ export class RsvpPlayer extends LitElement {
   private static readonly STEP = 50;
   private static readonly REWIND_WORDS = 5;
   private static readonly FAST_FORWARD_WORDS = 5; // Added for fast forward functionality
+  private static readonly SWIPE_THRESHOLD = 30;
+
+  private touchStartX: number | null = null;
 
   static styles = css`
     :host {
@@ -154,7 +157,15 @@ export class RsvpPlayer extends LitElement {
           @close=${this._toggleSettingsPane}
         ></rsvp-settings>
       ` : html`
-        <div class="word" part="word" style="font-size: ${this.wordFontSize}rem;">
+        <div
+          class="word"
+          part="word"
+          style="font-size: ${this.wordFontSize}rem;"
+          @click=${this._onAreaClick}
+          @touchstart=${this._onTouchStart}
+          @touchmove=${this._onTouchMove}
+          @touchend=${this._onTouchEnd}
+        >
           ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
         </div>
 
@@ -204,6 +215,46 @@ export class RsvpPlayer extends LitElement {
     }
     // Dispatch event after state change, so listeners get the new state
     this.dispatchEvent(new CustomEvent(this.playing ? 'play' : 'pause'));
+  }
+
+  private _onAreaClick() {
+    this._onPlayPause();
+  }
+
+  private _onTouchStart(e: TouchEvent) {
+    this.touchStartX = e.changedTouches[0].clientX;
+    e.preventDefault();
+  }
+
+  private _onTouchMove(e: TouchEvent) {
+    e.preventDefault();
+  }
+
+  private _onTouchEnd(e: TouchEvent) {
+    if (this.touchStartX === null) {
+      return;
+    }
+    const endX = e.changedTouches[0].clientX;
+    const diff = endX - this.touchStartX;
+    this.touchStartX = null;
+    e.preventDefault();
+    if (Math.abs(diff) > RsvpPlayer.SWIPE_THRESHOLD) {
+      if (diff < 0) {
+        this._rewind();
+      } else {
+        this._fastForward();
+      }
+      return;
+    }
+
+    const width = this.clientWidth;
+    if (endX < width * 0.3) {
+      this._decreaseSpeed();
+    } else if (endX > width * 0.7) {
+      this._increaseSpeed();
+    } else {
+      this._onPlayPause();
+    }
   }
   
   private _onProgressBarClick(e: MouseEvent) {
