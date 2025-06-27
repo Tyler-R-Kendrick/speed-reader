@@ -13,12 +13,12 @@ Feature: Configurable Control
   Scenario: Increasing speed
     Given the player is playing at 300 wpm
     When I press the "Arrow Up" key
-    Then the playback speed increases by a fixed increment within the range 200-350 wpm
+    Then the playback speed increases by a fixed increment within the range 100-800 wpm
 
   Scenario: Decreasing speed
     Given the player is playing at 300 wpm
     When I press the "Arrow Down" key
-    Then the playback speed decreases by a fixed increment within the range 200-350 wpm
+    Then the playback speed decreases by a fixed increment within the range 100-800 wpm
 
   Scenario: Rewinding words
     Given the player has advanced 10 words

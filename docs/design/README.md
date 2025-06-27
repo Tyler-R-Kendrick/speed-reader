@@ -6,6 +6,7 @@ This folder contains W3C-compliant design tokens for the Speed-Reader project. D
 - [Main Requirements & Design Guidelines](../README.md)
 - [Feature Specifications](../features/)
 - [Architecture Docs](../architecture/README.md)
+- [Design Decisions](decisions/)
 
 ## Token Files
 
