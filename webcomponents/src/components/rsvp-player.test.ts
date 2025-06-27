@@ -2,13 +2,16 @@ import '@testing-library/jest-dom';
 import { screen, fireEvent, within } from '@testing-library/dom';
 import { RsvpPlayer } from './rsvp-player';
 
-if (!customElements.get('rsvp-player')) {
-  customElements.define('rsvp-player', RsvpPlayer);
+const PLAYER_TAG = 'rsvp-player';
+
+if (!customElements.get(PLAYER_TAG)) {
+  customElements.define(PLAYER_TAG, RsvpPlayer);
 }
 
+/* eslint-disable max-lines-per-function */
 describe.skip('RsvpPlayer', () => {
   beforeEach(() => {
-    document.body.innerHTML = '<rsvp-player></rsvp-player>';
+    document.body.innerHTML = `<${PLAYER_TAG}></${PLAYER_TAG}>`;
   });
 
   it('renders play button', () => {
@@ -22,7 +25,7 @@ describe.skip('RsvpPlayer', () => {
   });
 
   it('toggles play/pause on click', async () => {
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     await el.updateComplete;
     const button = within(el.shadowRoot! as unknown as HTMLElement).getByRole('button');
     fireEvent.click(button);
@@ -34,7 +37,7 @@ describe.skip('RsvpPlayer', () => {
   });
 
   it('toggles play/pause on Space key', async () => {
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     await el.updateComplete;
     const button = within(el.shadowRoot! as unknown as HTMLElement).getByRole('button');
     fireEvent.keyDown(window, { key: ' ' });
@@ -46,7 +49,7 @@ describe.skip('RsvpPlayer', () => {
   });
 
   it('increases speed with ArrowUp key', async () => {
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     await el.updateComplete;
     const display = within(el.shadowRoot! as unknown as HTMLElement).getByText(/\d+ WPM/);
     const initial = el.wpm;
@@ -59,7 +62,7 @@ describe.skip('RsvpPlayer', () => {
   });
 
   it('decreases speed with ArrowDown key', async () => {
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     await el.updateComplete;
     const display = within(el.shadowRoot! as unknown as HTMLElement).getByText(/\d+ WPM/);
     const initial = el.wpm;
@@ -73,7 +76,7 @@ describe.skip('RsvpPlayer', () => {
 
   it('rewinds words with ArrowLeft key', async () => {
     jest.useFakeTimers();
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     el.text = 'one two three four five six seven eight';
     await el.updateComplete;
     fireEvent.click(within(el.shadowRoot! as unknown as HTMLElement).getByRole('button'));
@@ -92,7 +95,7 @@ describe.skip('RsvpPlayer', () => {
   });
 
   it('displays first word when text is set', async () => {
-    const el = document.querySelector<RsvpPlayer>('rsvp-player')!;
+    const el = document.querySelector<RsvpPlayer>(PLAYER_TAG)!;
     el.text = 'hello world';
     await el.updateComplete;
     expect(within(el.shadowRoot! as unknown as HTMLElement).getByText('hello')).toBeInTheDocument();

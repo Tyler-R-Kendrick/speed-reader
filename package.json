@@ -2,7 +2,7 @@
   "private": true,
   "workspaces": ["webcomponents"],
   "scripts": {
-    "test": "npm -w webcomponents test",
-    "lint": "npm -w webcomponents run lint"
+    "test": "cd webcomponents && npm test && cd ..",
+    "lint": "cd webcomponents && npm run lint && cd .."
   }
 }
