@@ -23,7 +23,6 @@ describe('RsvpPlayer mobile layout', () => {
     const button = (controls.shadowRoot as unknown as HTMLElement).querySelector('button[aria-label*="Fullscreen"]');
     expect(button).toBeInTheDocument();
   });
-
   describe('touch gestures', () => {
     const TAG = 'rsvp-player';
 
