@@ -17,6 +17,9 @@ describe('RsvpPlayer settings pane', () => {
     await (controls as any).updateComplete;
     const button = controls.shadowRoot!.querySelector('button[aria-label="Settings"]') as HTMLButtonElement;
     expect(button).toBeVisible();
+    expect(button.getAttribute('part')).toBe('settings-button');
+    const icon = button.querySelector('svg');
+    expect(icon).toBeTruthy();
     fireEvent.click(button);
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector('rsvp-settings')).toBeInTheDocument();
