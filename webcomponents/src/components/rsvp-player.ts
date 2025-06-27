@@ -51,6 +51,15 @@ export class RsvpPlayer extends LitElement {
       flex-direction: column;
       justify-content: center; /* Center word vertically */
       position: relative; /* Needed for settings pane positioning */
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      :host {
+        min-height: 100dvh;
+        width: 100vw;
+        margin: 0;
+      }
     }
 
     .word {

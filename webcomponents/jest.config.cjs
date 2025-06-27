@@ -17,5 +17,6 @@ module.exports = {
       tsconfig: '<rootDir>/tsconfig.json'
     }
   },
+  testPathIgnorePatterns: ['<rootDir>/e2e/'],
   rootDir: '.'
 };
