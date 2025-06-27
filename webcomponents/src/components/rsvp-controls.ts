@@ -44,30 +44,37 @@ export class RsvpControls extends LitElement {
         }
     `;
 
-    private _dispatchEvent(eventName: string) {
-        this.dispatchEvent(new CustomEvent(eventName));
-    }
-    private _onPlayPause() {
+    private _dispatchEvent = (eventName: string) => {
+        this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true }));
+    };
+
+    private _onPlayPause = () => {
         this._dispatchEvent('play-pause');
-    }
-    private _onRewind() {
+    };
+
+    private _onRewind = () => {
         this._dispatchEvent('rewind');
-    }
-    private _onFastForward() {
+    };
+
+    private _onFastForward = () => {
         this._dispatchEvent('fast-forward');
-    }
-    private _onDecreaseSpeed() {
+    };
+
+    private _onDecreaseSpeed = () => {
         this._dispatchEvent('decrease-speed');
-    }
-    private _onIncreaseSpeed() {
+    };
+
+    private _onIncreaseSpeed = () => {
         this._dispatchEvent('increase-speed');
-    }
-    private _onToggleFullscreen() {
+    };
+
+    private _onToggleFullscreen = () => {
         this._dispatchEvent('toggle-fullscreen');
-    }
-    private _onToggleSettings() {
+    };
+
+    private _onToggleSettings = () => {
         this._dispatchEvent('toggle-settings');
-    }
+    };
 
     render() {
         const playPauseIcon = this.playing
@@ -108,7 +115,9 @@ export class RsvpControls extends LitElement {
             </svg>
           </button>
           <button @click=${this._onToggleSettings} aria-label="Settings">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07-.49.12.64l2.11 1.65c-.04.32-.07.) .65-.07.)198s.03.)66.)07...).'/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .11-.59l-1.91-3.27a.5.5 0 0 0-.6-.22l-2.34.94a6.98 6.98 0 0 0-1.6-.95l-.35-2.47a.5.5 0 0 0-.49-.42h-3.78a.5.5 0 0 0-.49.42l-.35 2.47a6.98 6.98 0 0 0-1.6.95l-2.34-.94a.5.5 0 0 0-.6.22l-1.91 3.27a.5.5 0 0 0 .11.59l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.11.59l1.91 3.27c.12.21.38.3.6.22l2.34-.94c.5.39 1.04.71 1.6.95l.35 2.47c.03.24.25.42.49.42h3.78c.24 0 .46-.18.49-.42l.35-2.47c.56-.24 1.1-.56 1.6-.95l2.34.94c.22.08.48-.01.6-.22l1.91-3.27a.5.5 0 0 0-.11-.59l-2.03-1.58zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>
+            </svg>
           </button>
         </div>
       </div>
