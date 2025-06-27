@@ -32,8 +32,8 @@ export class RsvpPlayer extends LitElement {
   @state() private showSettingsPane: boolean = false;
 
   private timerId?: number;
-  private static readonly MIN_WPM = 200;
-  private static readonly MAX_WPM = 350;
+  private static readonly MIN_WPM = 100;
+  private static readonly MAX_WPM = 800;
   private static readonly STEP = 50;
   private static readonly REWIND_WORDS = 5;
   private static readonly FAST_FORWARD_WORDS = 5; // Added for fast forward functionality
