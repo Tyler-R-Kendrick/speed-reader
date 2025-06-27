@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js",
     "test:e2e": "playwright test",
-    "lint:js": "eslint --max-warnings 0 src/**/*.{ts,js}",
+    "lint:js": "ESLINT_USE_FLAT_CONFIG=false eslint -c .eslintrc.cjs --ext .ts --max-warnings 0 src",
     "lint:css": "stylelint src/**/*.css --max-warnings 0",
     "lint": "npm run lint:js && npm run lint:css"
   },
