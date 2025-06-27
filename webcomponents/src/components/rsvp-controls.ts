@@ -5,10 +5,12 @@ export class RsvpControls extends LitElement {
     static properties = {
         playing: { type: Boolean },
         wpm: { type: Number },
+        isFullscreen: { type: Boolean },
     };
 
     @property({ type: Boolean }) playing: boolean = false;
     @property({ type: Number }) wpm: number = 300;
+    @property({ type: Boolean }) isFullscreen: boolean = false;
 
     static styles = css`
         .controls {
@@ -100,11 +102,18 @@ export class RsvpControls extends LitElement {
           <button @click=${this._onIncreaseSpeed} aria-label="Increase speed">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           </button>
-          <button @click=${this._onToggleFullscreen} aria-label="Toggle Fullscreen">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              ${this.playing /* placeholder for proper fullscreenElement check */
-                ? html`<path d="${exitFullscreenPath}"/>`
-                : html`<path d="${enterFullscreenPath}"/>`}
+          <button
+            @click=${this._onToggleFullscreen}
+            aria-label=${this.isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="currentColor">
+              ${this.isFullscreen
+                ? html`<path d="${exitFullscreenPath}" />`
+                : html`<path d="${enterFullscreenPath}" />`}
             </svg>
           </button>
           <button @click=${this._onToggleSettings} aria-label="Settings">
