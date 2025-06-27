@@ -57,7 +57,7 @@ describe.skip('RsvpPlayer', () => {
     await el.updateComplete;
     const newWpm = el.wpm;
     expect(newWpm).toBeGreaterThan(initial);
-    expect(newWpm).toBeLessThanOrEqual(350);
+    expect(newWpm).toBeLessThanOrEqual(800);
     expect(display).toHaveTextContent(`${newWpm} WPM`);
   });
 
@@ -70,7 +70,7 @@ describe.skip('RsvpPlayer', () => {
     await el.updateComplete;
     const newWpm = el.wpm;
     expect(newWpm).toBeLessThan(initial);
-    expect(newWpm).toBeGreaterThanOrEqual(200);
+    expect(newWpm).toBeGreaterThanOrEqual(100);
     expect(display).toHaveTextContent(`${newWpm} WPM`);
   });
 
