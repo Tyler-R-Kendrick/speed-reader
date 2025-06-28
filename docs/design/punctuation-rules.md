@@ -11,7 +11,11 @@ The RSVP player handles punctuation to preserve reading rhythm while signalling 
   - Each period remains onscreen until the full ellipsis is shown, using the current WPM delay for each step.
 - **Commas**
   - Commas do not appear onscreen but cause the preceding word to stay for one extra delay interval.
+- **Colons & Semicolons**
+  - `:` and `;` are treated like commas. They are hidden and add one extra delay to the word before them.
 - **Periods**
   - A period that ends a sentence does not display and has no extra delay.
+- **Default**
+  - Any other punctuation characters remain as part of the word and do not alter timing.
 
 These rules ensure visual cues for questioning or emphatic sentences while keeping pacing consistent.
