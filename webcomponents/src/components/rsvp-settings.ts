@@ -143,9 +143,15 @@ export class RsvpSettings extends LitElement {
       color: #FFFFFF;
       font-size: 24px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
     }
     .close-button:hover {
-      color: #CCCCCC;
+      background-color: #FFFFFF;
+      color: #000000;
     }
   `;
 
@@ -200,54 +206,62 @@ export class RsvpSettings extends LitElement {
   }
 
   private _touchStartY = 0;
+  private _isSwiping = false;
 
   private _onPointerDown = (e: PointerEvent) => {
     if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
       this._touchStartY = e.clientY;
-      e.preventDefault();
+      this._isSwiping = this.scrollTop === 0;
     }
   };
 
   private _onPointerMove = (e: PointerEvent) => {
-    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
-      e.preventDefault();
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe && this._isSwiping) {
+      const deltaY = e.clientY - this._touchStartY;
+      if (deltaY > 10) {
+        e.preventDefault();
+      }
     }
   };
 
   private _onPointerUp = (e: PointerEvent) => {
-    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe && this._isSwiping) {
       const deltaY = e.clientY - this._touchStartY;
-      e.preventDefault();
       if (deltaY > 50) {
+        e.preventDefault();
         this._onClose();
       }
     }
+    this._isSwiping = false;
   };
 
   private _onTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0] ?? e.changedTouches[0];
     if (touch && this.gestures.settingsSwipe) {
       this._touchStartY = touch.clientY;
-      e.preventDefault();
+      this._isSwiping = this.scrollTop === 0;
     }
   };
 
   private _onTouchMove = (e: TouchEvent) => {
-    if (this.gestures.settingsSwipe) {
-      e.preventDefault();
+    if (this.gestures.settingsSwipe && this._isSwiping) {
+      const touch = e.touches[0] ?? e.changedTouches[0];
+      if (touch && touch.clientY - this._touchStartY > 10) {
+        e.preventDefault();
+      }
     }
   };
 
   private _onTouchEnd = (e: TouchEvent) => {
     const touch = e.changedTouches[0] ?? e.touches[0];
-    if (!touch || !this.gestures.settingsSwipe) {
-      return;
+    if (touch && this.gestures.settingsSwipe && this._isSwiping) {
+      const deltaY = touch.clientY - this._touchStartY;
+      if (deltaY > 50) {
+        e.preventDefault();
+        this._onClose();
+      }
     }
-    const deltaY = touch.clientY - this._touchStartY;
-    e.preventDefault();
-    if (deltaY > 50) {
-      this._onClose();
-    }
+    this._isSwiping = false;
   };
 
   connectedCallback() {
@@ -294,8 +308,8 @@ export class RsvpSettings extends LitElement {
               id="text-input"
               .value=${this.text}
               @input=${this._onTextInput}
-              ?readonly=${this.url !== ''}
-              aria-readonly=${this.url !== ''}
+              ?readonly=${this.mode === 'url'}
+              aria-readonly=${this.mode === 'url'}
             ></textarea>
           </div>
         ` : html`

@@ -47,11 +47,22 @@ describe('RsvpSettings', () => {
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Hello World' }));
   });
 
-  it('disables textarea when url is set', async () => {
+  it('hides textarea when in url mode', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    el.mode = 'url';
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('textarea')).toBeNull();
+    expect(el.shadowRoot!.querySelector('input[type="url"]')).toBeInTheDocument();
+  });
+
+  it('enables textarea after switching back to paste mode', async () => {
     const el = document.querySelector(TAG) as RsvpSettings;
     el.url = TEST_URL;
+    el.mode = 'url';
+    await el.updateComplete;
+    el.mode = 'paste';
     await el.updateComplete;
     const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
-    expect(textarea).toHaveAttribute('readonly');
+    expect(textarea).not.toHaveAttribute('readonly');
   });
 });
