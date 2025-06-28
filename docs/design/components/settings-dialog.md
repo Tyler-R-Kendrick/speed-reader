@@ -4,14 +4,16 @@
 - Root (`<sr-settings-dialog>`)
 - Dialog Overlay (`.overlay`)
 - Dialog Panel (`.panel`)
-- Tabs/Sections (`.tabs`)
-- Form Fields (`.field`)
-- Save/Cancel Buttons (`.actions`)
+- Tabs (`.tabs`) for Paste and URL modes
+- Text Input Area (`textarea`)
+- Font Size Slider (`input[type=range]`)
+- Close Button (`button`)
 
 ## States
 - Open / Closed
 - Focused / Blurred
 - Disabled
+- Closing Gesture (swipe down on mobile)
 
 ## Design Tokens
 - Color: `color.tokens.json` (background, border, text, accent)
@@ -24,6 +26,7 @@
 - ARIA: `role=dialog`, `aria-modal=true`, labeled by heading
 - Keyboard: Tab navigation, Esc (close)
 - Focus trap: Tokenized focus ring
+- Touch: swipe down to close on mobile
 
 ## References
 - [Requirements](../../README.md)
