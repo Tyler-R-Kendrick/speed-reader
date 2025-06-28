@@ -35,7 +35,8 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 2. **Gradient-Guided Text** ([feature](features/gradient_guided_text.feature))
    - BeeLine-style color gradients for continuous text to guide eye movement ([WestEd BeeLine Study](https://www.rif.org/sites/default/files/documents/2019/10/24/Support_Materials/BeeLineWestEdStudyFinal.pdf)).
 3. **LLM Summary** ([feature](features/llm_summary.feature))
-   - LLM summary option using user-supplied endpoint/key.
+   - Toggle to summarize text using an LLM before parsing. Requires provider,
+     model and API key (OpenRouter or OpenAI).
 4. **Comprehension & Fatigue Monitoring** ([feature](features/comprehension_fatigue.feature))
    - Visual fatigue alerts: Detect blink suppression and prompt breaks ([Di Nocera et al.](https://www.sciencedirect.com/science/article/pii/S0747563214007663)).
 5. **Eye-Tracking Integration** ([feature](features/eye_tracking_integration.feature))

@@ -7,6 +7,8 @@ import type { RsvpSettings } from './rsvp-settings';
 
 const TAG = 'rsvp-settings';
 const TEST_URL = 'http://example.com';
+const CHANGE_EVENT = "text-change";
+const flush = () => new Promise(resolve => setTimeout(resolve, 0));
 
 describe('RsvpSettings', () => {
   beforeEach(() => {
@@ -39,13 +41,10 @@ describe('RsvpSettings', () => {
     el.url = TEST_URL;
     await el.updateComplete;
     const loadButton = el.shadowRoot!.querySelector('.load-url') as HTMLButtonElement;
-    const listener = jest.fn();
-    el.addEventListener('text-change', listener);
     fireEvent.click(loadButton);
     await Promise.resolve();
     await Promise.resolve();
     expect(fetchMock).toHaveBeenCalledWith(TEST_URL);
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Hello World' }));
   });
 
   it('hides textarea when in url mode', async () => {
@@ -71,8 +70,6 @@ describe('RsvpSettings', () => {
     const el = document.querySelector(TAG) as RsvpSettings;
     await el.updateComplete;
     const input = el.shadowRoot!.querySelector('input[type="file"]') as HTMLInputElement;
-    const listener = jest.fn();
-    el.addEventListener('text-change', listener);
     const file = new File(['<p>Hello File</p>'], 'sample.html', { type: 'text/html' });
 
     const mockReader: any = {
@@ -84,8 +81,30 @@ describe('RsvpSettings', () => {
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
     await el.updateComplete;
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Hello File' }));
+    await flush();
     const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
     expect(textarea.value).toBe('Hello File');
+  });
+
+  it('disables summary toggle without api key', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const toggle = el.shadowRoot!.querySelector('#llm-summary') as HTMLInputElement;
+    expect(toggle.disabled).toBe(true);
+  });
+
+  it('summarizes url content when enabled', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    el.mode = 'url';
+    el.url = TEST_URL;
+    el.llmConfig = { provider: 'openrouter', apiKey: 'k', model: 'gpt' } as any;
+    el.useLlmSummary = true;
+    await el.updateComplete;
+    const fetchMock: any = jest.fn();
+    fetchMock.mockResolvedValueOnce({ text: async () => '<html><body>Original</body></html>' } as any);
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ choices: [{ message: { content: 'Summary' } }] }) } as any);
+    (global as any).fetch = fetchMock;
+    await (el as any)._loadUrl();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

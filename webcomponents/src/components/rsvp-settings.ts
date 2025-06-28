@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { HtmlParser, TextParser } from '../parsers/content-parser';
+import { requestSummary, LlmConfig } from '../llm/summary';
 
 const TEXT_CHANGE_EVENT = 'text-change';
 
@@ -35,6 +36,12 @@ export class RsvpSettings extends LitElement {
     taps: true,
     settingsSwipe: true,
   };
+  @property({ type: Object }) llmConfig: LlmConfig = {
+    provider: 'openrouter',
+    apiKey: '',
+    model: 'gpt-3.5-turbo',
+  };
+  @property({ type: Boolean }) useLlmSummary = false;
 
   static styles = css`
     :host {
@@ -158,16 +165,28 @@ export class RsvpSettings extends LitElement {
     }
   `;
 
-  private _onTextInput(e: Event) {
+  private async _onTextInput(e: Event) {
     const target = e.target as HTMLTextAreaElement;
     const value = target.value;
-    this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: value }));
+    const processed = await this._maybeSummarize(value);
+    this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed }));
   }
 
   private _onFontSizeInput(e: Event) {
     const target = e.target as HTMLInputElement;
     const value = parseFloat(target.value);
     this.dispatchEvent(new CustomEvent('font-size-change', { detail: value }));
+  }
+
+  private async _maybeSummarize(text: string): Promise<string> {
+    if (this.useLlmSummary && this.llmConfig.apiKey) {
+      try {
+        return await requestSummary(text, this.llmConfig);
+      } catch {
+        return text;
+      }
+    }
+    return text;
   }
 
   private _onUrlInput(e: Event) {
@@ -182,8 +201,9 @@ export class RsvpSettings extends LitElement {
       const text = await res.text();
       const parser = new HtmlParser();
       const parsed = parser.parse(text);
+      const processed = await this._maybeSummarize(parsed);
       this.dispatchEvent(
-        new CustomEvent(TEXT_CHANGE_EVENT, { detail: parsed })
+        new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
       );
     } catch {
       // Swallow network errors
@@ -203,8 +223,12 @@ export class RsvpSettings extends LitElement {
     reader.addEventListener('load', () => {
       const content = (reader.result as string) ?? '';
       const parsed = parser.parse(content);
-      this.text = parsed;
-      this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: parsed }));
+      this._maybeSummarize(parsed).then(processed => {
+        this.text = processed;
+        this.dispatchEvent(
+          new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
+        );
+      });
       input.value = '';
     });
     // eslint-disable-next-line unicorn/prefer-blob-reading-methods
@@ -223,6 +247,21 @@ export class RsvpSettings extends LitElement {
     const updated = { ...this.gestures, [action]: target.checked };
     this.gestures = updated;
     this.dispatchEvent(new CustomEvent('gestures-change', { detail: updated }));
+  }
+
+  private _onApiKeyInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.llmConfig = { ...this.llmConfig, apiKey: target.value };
+  }
+
+  private _onModelInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.llmConfig = { ...this.llmConfig, model: target.value };
+  }
+
+  private _onSummaryToggle(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.useLlmSummary = target.checked;
   }
 
   private _onClose() {
@@ -351,6 +390,16 @@ export class RsvpSettings extends LitElement {
             <button class="load-url" @click=${this._loadUrl}>Load Content</button>
           </div>
         `}
+        <fieldset>
+          <legend>LLM Summary</legend>
+          <label>API Key
+            <input id="llm-key" type="password" .value=${this.llmConfig.apiKey} @input=${this._onApiKeyInput}>
+          </label>
+          <label>Model
+            <input id="llm-model" type="text" .value=${this.llmConfig.model} @input=${this._onModelInput}>
+          </label>
+          <label><input id="llm-summary" type="checkbox" .checked=${this.useLlmSummary} ?disabled=${!this.llmConfig.apiKey} @change=${this._onSummaryToggle}> Summarize text before reading</label>
+        </fieldset>
         <div>
           <label for="font-size-input">Font Size (rem): ${this.wordFontSize}</label>
           <div style="display: flex; align-items: center; gap: 8px;">
