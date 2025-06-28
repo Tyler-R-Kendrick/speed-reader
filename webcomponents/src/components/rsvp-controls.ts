@@ -8,11 +8,13 @@ export class RsvpControls extends LitElement {
         playing: { type: Boolean },
         wpm: { type: Number },
         isFullscreen: { type: Boolean },
+        isEnded: { type: Boolean },
     };
 
     @property({ type: Boolean }) playing: boolean = false;
     @property({ type: Number }) wpm: number = 300;
     @property({ type: Boolean }) isFullscreen: boolean = false;
+    @property({ type: Boolean }) isEnded: boolean = false;
 
     static styles = css`
         .controls {
@@ -89,10 +91,17 @@ export class RsvpControls extends LitElement {
     };
 
     render() {
-        const playPauseIcon = this.playing
-            ? html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
-            : html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-        const playPauseLabel = this.playing ? 'Pause' : 'Play';
+        let playPauseIcon;
+        let playPauseLabel = 'Play';
+        if (this.isEnded) {
+            playPauseIcon = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.14-7-7h2c0 2.76 2.24 5 5 5s5-2.24 5-5-2.24-5-5-5z"/></svg>`;
+            playPauseLabel = 'Replay';
+        } else if (this.playing) {
+            playPauseIcon = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+            playPauseLabel = 'Pause';
+        } else {
+            playPauseIcon = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+        }
         return html`
       <div class="controls">
         <div class="control-group">
