@@ -1,11 +1,37 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 
+interface Keybindings {
+  playPause: string;
+  increaseSpeed: string;
+  decreaseSpeed: string;
+  rewind: string;
+  fastForward: string;
+}
+
+interface GestureSettings {
+  swipe: boolean;
+  taps: boolean;
+  settingsSwipe: boolean;
+}
+
 export class RsvpSettings extends LitElement {
   @property({ type: String }) text: string = '';
   @property({ type: Number }) wordFontSize: number = 3;
   @property({ type: String }) mode: 'paste' | 'url' = 'paste';
   @property({ type: String }) url: string = '';
+  @property({ type: Object }) keybindings: Keybindings = {
+    playPause: ' ',
+    increaseSpeed: 'ArrowUp',
+    decreaseSpeed: 'ArrowDown',
+    rewind: 'ArrowLeft',
+    fastForward: 'ArrowRight',
+  };
+  @property({ type: Object }) gestures: GestureSettings = {
+    swipe: true,
+    taps: true,
+    settingsSwipe: true,
+  };
 
   static styles = css`
     :host {
@@ -155,6 +181,20 @@ export class RsvpSettings extends LitElement {
     }
   }
 
+  private _onKeybindingInput(action: keyof Keybindings, e: Event) {
+    const target = e.target as HTMLInputElement;
+    const updated = { ...this.keybindings, [action]: target.value };
+    this.keybindings = updated;
+    this.dispatchEvent(new CustomEvent('keybindings-change', { detail: updated }));
+  }
+
+  private _onGestureToggle(action: keyof GestureSettings, e: Event) {
+    const target = e.target as HTMLInputElement;
+    const updated = { ...this.gestures, [action]: target.checked };
+    this.gestures = updated;
+    this.dispatchEvent(new CustomEvent('gestures-change', { detail: updated }));
+  }
+
   private _onClose() {
     this.dispatchEvent(new CustomEvent('close'));
   }
@@ -162,20 +202,20 @@ export class RsvpSettings extends LitElement {
   private _touchStartY = 0;
 
   private _onPointerDown = (e: PointerEvent) => {
-    if (e.pointerType === 'touch') {
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
       this._touchStartY = e.clientY;
       e.preventDefault();
     }
   };
 
   private _onPointerMove = (e: PointerEvent) => {
-    if (e.pointerType === 'touch') {
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
       e.preventDefault();
     }
   };
 
   private _onPointerUp = (e: PointerEvent) => {
-    if (e.pointerType === 'touch') {
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
       const deltaY = e.clientY - this._touchStartY;
       e.preventDefault();
       if (deltaY > 50) {
@@ -186,19 +226,21 @@ export class RsvpSettings extends LitElement {
 
   private _onTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0] ?? e.changedTouches[0];
-    if (touch) {
+    if (touch && this.gestures.settingsSwipe) {
       this._touchStartY = touch.clientY;
       e.preventDefault();
     }
   };
 
   private _onTouchMove = (e: TouchEvent) => {
-    e.preventDefault();
+    if (this.gestures.settingsSwipe) {
+      e.preventDefault();
+    }
   };
 
   private _onTouchEnd = (e: TouchEvent) => {
     const touch = e.changedTouches[0] ?? e.touches[0];
-    if (!touch) {
+    if (!touch || !this.gestures.settingsSwipe) {
       return;
     }
     const deltaY = touch.clientY - this._touchStartY;
@@ -270,6 +312,30 @@ export class RsvpSettings extends LitElement {
             <input type="number" id="font-size-number-input" min="1" max="10" step="0.1" .value=${this.wordFontSize.toString()} @input=${this._onFontSizeInput} style="width: 60px;">
           </div>
         </div>
+        <fieldset>
+          <legend>Keyboard Shortcuts</legend>
+          <label>Play/Pause
+            <input id="kb-play" type="text" .value=${this.keybindings.playPause} @input=${(e: Event) => this._onKeybindingInput('playPause', e)}>
+          </label>
+          <label>Increase Speed
+            <input id="kb-inc" type="text" .value=${this.keybindings.increaseSpeed} @input=${(e: Event) => this._onKeybindingInput('increaseSpeed', e)}>
+          </label>
+          <label>Decrease Speed
+            <input id="kb-dec" type="text" .value=${this.keybindings.decreaseSpeed} @input=${(e: Event) => this._onKeybindingInput('decreaseSpeed', e)}>
+          </label>
+          <label>Rewind
+            <input id="kb-rew" type="text" .value=${this.keybindings.rewind} @input=${(e: Event) => this._onKeybindingInput('rewind', e)}>
+          </label>
+          <label>Fast Forward
+            <input id="kb-ff" type="text" .value=${this.keybindings.fastForward} @input=${(e: Event) => this._onKeybindingInput('fastForward', e)}>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Gestures</legend>
+          <label><input type="checkbox" .checked=${this.gestures.swipe} @change=${(e: Event) => this._onGestureToggle('swipe', e)}> Swipe Fast-Forward/Rewind</label>
+          <label><input type="checkbox" .checked=${this.gestures.taps} @change=${(e: Event) => this._onGestureToggle('taps', e)}> Tap Controls</label>
+          <label><input type="checkbox" .checked=${this.gestures.settingsSwipe} @change=${(e: Event) => this._onGestureToggle('settingsSwipe', e)}> Swipe Settings</label>
+        </fieldset>
       </div>
     `;
   }
