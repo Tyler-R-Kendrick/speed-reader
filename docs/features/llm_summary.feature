@@ -7,10 +7,16 @@ Feature: LLM Summary
     Given a text document is loaded in the reader
     And I have configured a valid LLM endpoint and API key
 
+  Scenario: Enabling the summary toggle
+    Given the LLM configuration form has a provider, model and API key
+    When I enable "Summarize text before reading"
+    Then the toggle becomes active for all text input methods
+
   Scenario: Requesting an AI-generated summary
-    When I click the "Generate Summary" button
+    Given "Summarize text before reading" is enabled
+    When I load a document
     Then the system sends the document to the LLM endpoint
-    And displays the returned summary above the text
+    And parses the returned summary instead of the original text
 
   Scenario: Summary request error handling
     Given the LLM endpoint returns an error
