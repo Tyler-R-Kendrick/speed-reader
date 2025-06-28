@@ -20,7 +20,7 @@ const CLOSERS: Record<string, string> = {
   "'": "'",
 };
 
-/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity */
+/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
 export function parseText(text: string): Token[] {
   const tokens: Token[] = [];
   const stack: string[] = [];
@@ -71,6 +71,16 @@ export function parseText(text: string): Token[] {
     }
 
     if (ch === ',') {
+      pushWord();
+      if (tokens.length > 0) {
+        const last = tokens.at(-1)!;
+        last.extraPause += 1;
+      }
+      i++;
+      continue;
+    }
+
+    if (ch === ':' || ch === ';') {
       pushWord();
       if (tokens.length > 0) {
         const last = tokens.at(-1)!;

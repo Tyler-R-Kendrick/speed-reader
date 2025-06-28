@@ -23,4 +23,16 @@ describe('parseText punctuation rules', () => {
     expect(tokens[0].extraPause).toBe(1);
     expect(tokens[1].extraPause).toBe(0);
   });
+
+  it('adds pause after colon', () => {
+    const tokens = parseText('Key: value');
+    expect(tokens.map(t => t.text)).toEqual(['Key', 'value']);
+    expect(tokens[0].extraPause).toBe(1);
+  });
+
+  it('adds pause after semicolon', () => {
+    const tokens = parseText('First; second');
+    expect(tokens.map(t => t.text)).toEqual(['First', 'second']);
+    expect(tokens[0].extraPause).toBe(1);
+  });
 });
