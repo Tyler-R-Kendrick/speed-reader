@@ -1,6 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { HtmlParser } from '../parsers/content-parser';
+import { HtmlParser, TextParser } from '../parsers/content-parser';
+
+const TEXT_CHANGE_EVENT = 'text-change';
 
 interface Keybindings {
   playPause: string;
@@ -159,7 +161,7 @@ export class RsvpSettings extends LitElement {
   private _onTextInput(e: Event) {
     const target = e.target as HTMLTextAreaElement;
     const value = target.value;
-    this.dispatchEvent(new CustomEvent('text-change', { detail: value }));
+    this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: value }));
   }
 
   private _onFontSizeInput(e: Event) {
@@ -181,11 +183,32 @@ export class RsvpSettings extends LitElement {
       const parser = new HtmlParser();
       const parsed = parser.parse(text);
       this.dispatchEvent(
-        new CustomEvent('text-change', { detail: parsed })
+        new CustomEvent(TEXT_CHANGE_EVENT, { detail: parsed })
       );
     } catch {
       // Swallow network errors
     }
+  }
+
+  private _onFileChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const type = file.type;
+    const isHtml =
+      type.includes('html') || ext === 'html' || ext === 'htm';
+    const parser = isHtml ? new HtmlParser() : new TextParser();
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      const content = (reader.result as string) ?? '';
+      const parsed = parser.parse(content);
+      this.text = parsed;
+      this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: parsed }));
+      input.value = '';
+    });
+    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
+    reader.readAsText(file);
   }
 
   private _onKeybindingInput(action: keyof Keybindings, e: Event) {
@@ -285,6 +308,7 @@ export class RsvpSettings extends LitElement {
     this.removeEventListener('touchend', this._onTouchEnd);
   }
 
+  // eslint-disable-next-line max-lines-per-function
   render() {
     const pasteActive = this.mode === 'paste';
     return html`
@@ -312,6 +336,13 @@ export class RsvpSettings extends LitElement {
               ?readonly=${this.mode === 'url'}
               aria-readonly=${this.mode === 'url'}
             ></textarea>
+            <label for="file-input">Import File:
+              <input
+                id="file-input"
+                type="file"
+                accept=".txt,.html,text/plain,text/html"
+                @change=${this._onFileChange}
+              ></label>
           </div>
         ` : html`
           <div>
