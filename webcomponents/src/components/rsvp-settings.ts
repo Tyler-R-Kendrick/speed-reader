@@ -19,6 +19,7 @@ export class RsvpSettings extends LitElement {
       padding: 20px;
       z-index: 10;
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     @media (max-width: 600px) {
@@ -124,6 +125,75 @@ export class RsvpSettings extends LitElement {
 
   private _onClose() {
     this.dispatchEvent(new CustomEvent('close'));
+  }
+
+  private _touchStartY = 0;
+
+  private _onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      this._touchStartY = e.clientY;
+      e.preventDefault();
+    }
+  };
+
+  private _onPointerMove = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
+  };
+
+  private _onPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      const deltaY = e.clientY - this._touchStartY;
+      e.preventDefault();
+      if (deltaY > 50) {
+        this._onClose();
+      }
+    }
+  };
+
+  private _onTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0] ?? e.changedTouches[0];
+    if (touch) {
+      this._touchStartY = touch.clientY;
+      e.preventDefault();
+    }
+  };
+
+  private _onTouchMove = (e: TouchEvent) => {
+    e.preventDefault();
+  };
+
+  private _onTouchEnd = (e: TouchEvent) => {
+    const touch = e.changedTouches[0] ?? e.touches[0];
+    if (!touch) {
+      return;
+    }
+    const deltaY = touch.clientY - this._touchStartY;
+    e.preventDefault();
+    if (deltaY > 50) {
+      this._onClose();
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('pointerdown', this._onPointerDown);
+    this.addEventListener('pointermove', this._onPointerMove);
+    this.addEventListener('pointerup', this._onPointerUp);
+    this.addEventListener('touchstart', this._onTouchStart, { passive: false });
+    this.addEventListener('touchmove', this._onTouchMove, { passive: false });
+    this.addEventListener('touchend', this._onTouchEnd, { passive: false });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('pointerdown', this._onPointerDown);
+    this.removeEventListener('pointermove', this._onPointerMove);
+    this.removeEventListener('pointerup', this._onPointerUp);
+    this.removeEventListener('touchstart', this._onTouchStart);
+    this.removeEventListener('touchmove', this._onTouchMove);
+    this.removeEventListener('touchend', this._onTouchEnd);
   }
 
   render() {

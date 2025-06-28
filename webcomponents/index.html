@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Speed Reader</title>
   <link href="/src/styles.css" rel="stylesheet" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <style>
+    html, body {
+      overscroll-behavior: none;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
 </head>
-<body style="margin:0;">
+<body>
   <rsvp-player text="This is a demo of the RSVP player. Use the controls or keyboard to play, pause, and adjust speed."></rsvp-player>
   <script type="module" src="/src/main.ts"></script>
 </body>
