@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
@@ -29,6 +30,23 @@ describe('RsvpPlayer settings pane', () => {
     fireEvent.click(button);
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector(SETTINGS_TAG)).toBeInTheDocument();
+  });
+
+  it('closes settings pane when close button clicked', async () => {
+    document.body.innerHTML = TEMPLATE;
+    const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    await el.updateComplete;
+
+    const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
+    await (controls as any).updateComplete;
+    const open = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR)!;
+    fireEvent.click(open);
+    await el.updateComplete;
+    const settings = el.shadowRoot!.querySelector(SETTINGS_TAG)!;
+    const close = settings.shadowRoot!.querySelector('.close-button') as HTMLButtonElement;
+    fireEvent.click(close);
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector(SETTINGS_TAG)).not.toBeInTheDocument();
   });
 
   it('shows settings pane on swipe up gesture', async () => {
@@ -82,9 +100,12 @@ describe('RsvpPlayer settings pane', () => {
     await el.updateComplete;
     const settings = el.shadowRoot!.querySelector(SETTINGS_TAG)!;
 
-    const ev = new TouchEvent('touchstart', { cancelable: true, touches: [{ clientY: 50 }] } as any);
-    const prevent = jest.spyOn(ev, 'preventDefault');
-    settings.dispatchEvent(ev);
+    settings.scrollTop = 0;
+    const start = new TouchEvent('touchstart', { cancelable: true, touches: [{ clientY: 50 }] } as any);
+    settings.dispatchEvent(start);
+    const move = new TouchEvent('touchmove', { cancelable: true, touches: [{ clientY: 70 }] } as any);
+    const prevent = jest.spyOn(move, 'preventDefault');
+    settings.dispatchEvent(move);
     expect(prevent).toHaveBeenCalled();
   });
 });
