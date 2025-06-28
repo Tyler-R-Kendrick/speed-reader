@@ -14,6 +14,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
   - Rewind: Arrow Left (rewind 5 words)
   - Fullscreen: F or button
   - Settings/Mode: Gear icon
+  - Keybindings and gestures are configurable in the settings pane
 - **Display:**
   - Words are centered in a focal point sized by the longest word in the session
   - Punctuation markers appear before/after the word, stacking to show nesting
@@ -24,6 +25,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - Progress bar with seek support
 - Settings pane for text input, URL loading and font size
 - Fullscreen toggle
+- Configurable keybindings and gestures ([defaults](features/default_keybindings.md))
 
 ## 4. Planned Features
 1. **Configurable Control** ([feature](features/configurable_control.feature))

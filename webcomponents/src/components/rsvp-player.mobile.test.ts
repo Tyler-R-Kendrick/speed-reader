@@ -83,5 +83,18 @@ describe('RsvpPlayer mobile layout', () => {
       word.dispatchEvent(ev);
       expect(prevent).toHaveBeenCalled();
     });
+
+    it('ignores swipe gestures when disabled', async () => {
+      const el = document.querySelector<RsvpPlayer>(TAG)!;
+      el.gestures = { ...el.gestures, swipe: false };
+      el.text = 'one two three four five';
+      await el.updateComplete;
+      const word = el.shadowRoot!.querySelector('.word') as HTMLElement;
+      (el as any).index = 2;
+      fireEvent.touchStart(word, { changedTouches: [{ clientX: 60 }] });
+      fireEvent.touchEnd(word, { changedTouches: [{ clientX: 10 }] });
+      await el.updateComplete;
+      expect((el as any).index).toBe(2);
+    });
   });
 });

@@ -9,6 +9,20 @@ interface Token {
   scopes: string[];
 }
 
+interface Keybindings {
+  playPause: string;
+  increaseSpeed: string;
+  decreaseSpeed: string;
+  rewind: string;
+  fastForward: string;
+}
+
+interface GestureSettings {
+  swipe: boolean;
+  taps: boolean;
+  settingsSwipe: boolean;
+}
+
 const OPENERS = ['(', '[', '{', '"', "'"] as const;
 const CLOSERS: Record<string, string> = {
   ')': '(',
@@ -74,6 +88,8 @@ export class RsvpPlayer extends LitElement {
     words: { type: Array },
     index: { type: Number },
     showSettingsPane: { type: Boolean },
+    keybindings: { type: Object },
+    gestures: { type: Object },
   };
   /** Input text for RSVP session */
   @property({ type: String }) text!: string;
@@ -90,6 +106,20 @@ export class RsvpPlayer extends LitElement {
   @state() private index: number;
   /** Visibility state for settings pane */
   @state() private showSettingsPane: boolean = false;
+  /** Configurable keyboard shortcuts */
+  @property({ type: Object }) keybindings: Keybindings = {
+    playPause: ' ',
+    increaseSpeed: 'ArrowUp',
+    decreaseSpeed: 'ArrowDown',
+    rewind: 'ArrowLeft',
+    fastForward: 'ArrowRight',
+  };
+  /** Gesture support toggles */
+  @property({ type: Object }) gestures: GestureSettings = {
+    swipe: true,
+    taps: true,
+    settingsSwipe: true,
+  };
 
   /** Track Y coordinate for swipe gesture */
   private _touchStartY = 0;
@@ -210,7 +240,7 @@ export class RsvpPlayer extends LitElement {
   };
 
   private _onSettingsPointerUp = (e: PointerEvent) => {
-    if (e.pointerType === 'touch') {
+    if (e.pointerType === 'touch' && this.gestures.settingsSwipe) {
       const deltaY = this._touchStartY - e.clientY;
       if (deltaY > 50 && !this.showSettingsPane) {
         e.preventDefault();
@@ -232,7 +262,7 @@ export class RsvpPlayer extends LitElement {
       return;
     }
     const deltaY = this._touchStartY - touch.clientY;
-    if (deltaY > 50 && !this.showSettingsPane) {
+    if (this.gestures.settingsSwipe && deltaY > 50 && !this.showSettingsPane) {
       e.preventDefault();
       this._toggleSettingsPane();
     }
@@ -250,8 +280,12 @@ export class RsvpPlayer extends LitElement {
         <rsvp-settings
           .text=${this.text}
           .wordFontSize=${this.wordFontSize}
+          .keybindings=${this.keybindings}
+          .gestures=${this.gestures}
           @text-change=${(e: CustomEvent) => this.text = e.detail}
           @font-size-change=${(e: CustomEvent) => this.wordFontSize = e.detail}
+          @keybindings-change=${(e: CustomEvent<Keybindings>) => this.keybindings = e.detail}
+          @gestures-change=${(e: CustomEvent<GestureSettings>) => this.gestures = e.detail}
           @close=${this._toggleSettingsPane}
         ></rsvp-settings>
       ` : html`
@@ -316,16 +350,23 @@ export class RsvpPlayer extends LitElement {
   }
 
   private _onAreaClick() {
-    this._onPlayPause();
+    if (this.gestures.taps) {
+      this._onPlayPause();
+    }
   }
 
   private _onTouchStart(e: TouchEvent) {
+    if (!this.gestures.swipe && !this.gestures.taps) {
+      return;
+    }
     this.touchStartX = e.changedTouches[0].clientX;
     e.preventDefault();
   }
 
   private _onTouchMove(e: TouchEvent) {
-    e.preventDefault();
+    if (this.gestures.swipe || this.gestures.taps) {
+      e.preventDefault();
+    }
   }
 
   private _onTouchEnd(e: TouchEvent) {
@@ -336,7 +377,7 @@ export class RsvpPlayer extends LitElement {
     const diff = endX - this.touchStartX;
     this.touchStartX = null;
     e.preventDefault();
-    if (Math.abs(diff) > RsvpPlayer.SWIPE_THRESHOLD) {
+    if (this.gestures.swipe && Math.abs(diff) > RsvpPlayer.SWIPE_THRESHOLD) {
       if (diff < 0) {
         this._rewind();
       } else {
@@ -346,12 +387,14 @@ export class RsvpPlayer extends LitElement {
     }
 
     const width = this.clientWidth;
-    if (endX < width * 0.3) {
-      this._decreaseSpeed();
-    } else if (endX > width * 0.7) {
-      this._increaseSpeed();
-    } else {
-      this._onPlayPause();
+    if (this.gestures.taps) {
+      if (endX < width * 0.3) {
+        this._decreaseSpeed();
+      } else if (endX > width * 0.7) {
+        this._increaseSpeed();
+      } else {
+        this._onPlayPause();
+      }
     }
   }
   
@@ -417,20 +460,20 @@ export class RsvpPlayer extends LitElement {
 
   private _onKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
-      case ' ': // space
+      case this.keybindings.playPause:
         e.preventDefault();
         this._onPlayPause();
         break;
-      case 'ArrowUp':
+      case this.keybindings.increaseSpeed:
         this._increaseSpeed();
         break;
-      case 'ArrowDown':
+      case this.keybindings.decreaseSpeed:
         this._decreaseSpeed();
         break;
-      case 'ArrowLeft':
+      case this.keybindings.rewind:
         this._stepBackward();
         break;
-      case 'ArrowRight':
+      case this.keybindings.fastForward:
         this._stepForward();
         break;
     }
