@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { parseText } from './rsvp-player';
+import { parseText } from '../parsers/tokenizer';
 
 describe('parseText punctuation rules', () => {
   it('assigns question marker to sentence words', () => {

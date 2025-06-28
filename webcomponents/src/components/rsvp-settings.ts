@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
+import { HtmlParser } from '../parsers/content-parser';
 
 interface Keybindings {
   playPause: string;
@@ -177,10 +178,10 @@ export class RsvpSettings extends LitElement {
     try {
       const res = await fetch(this.url);
       const text = await res.text();
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      const bodyText = doc.body.textContent ?? '';
+      const parser = new HtmlParser();
+      const parsed = parser.parse(text);
       this.dispatchEvent(
-        new CustomEvent('text-change', { detail: bodyText.trim() })
+        new CustomEvent('text-change', { detail: parsed })
       );
     } catch {
       // Swallow network errors
