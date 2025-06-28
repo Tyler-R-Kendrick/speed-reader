@@ -55,6 +55,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - **Offline:** Workbox Service Worker
 - **NLP/OCR:** Tesseract.js
 - **State:** Redux-style store (Proxy + events)
+- **Playback Format:** [JSON session](architecture/playback-format.md)
 
 ## 7. Milestone 0 (MVP)
 - Lit-based RSVP player (play/pause, speed control)

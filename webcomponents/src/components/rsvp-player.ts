@@ -4,6 +4,7 @@ import './rsvp-settings';
 import './rsvp-controls';
 import './rsvp-fullscreen';
 import { Token, parseText } from '../parsers/tokenizer';
+import { parseSession, serializeSession } from '../parsers/session';
 
 interface Keybindings {
   playPause: string;
@@ -40,6 +41,7 @@ export class RsvpPlayer extends LitElement {
   // Expose only external properties; internal state managed via @state
   static properties = {
     text: { type: String },
+    session: { type: String },
     wpm: { type: Number },
     wordFontSize: { type: Number }, // Added for word font size configuration
     playing: { type: Boolean },
@@ -51,6 +53,8 @@ export class RsvpPlayer extends LitElement {
   };
   /** Input text for RSVP session */
   @property({ type: String }) text!: string;
+  /** Serialized session json */
+  @property({ type: String }) session: string = '';
   /** Words per minute speed */
   @property({ type: Number }) wpm!: number;
   /** Word font size in rem */
@@ -396,6 +400,9 @@ export class RsvpPlayer extends LitElement {
     if (this.text === undefined) {
       this.text = '';
     }
+    if (this.session === undefined) {
+      this.session = '';
+    }
     if (this.wpm === undefined) {
       this.wpm = 300;
     }
@@ -419,7 +426,7 @@ export class RsvpPlayer extends LitElement {
   }
 
   protected updated(changed: Map<string, any>) {
-    if (changed.has('text')) {
+    if (changed.has('text') || changed.has('session')) {
       this._resetSession();
     }
     if (changed.has('playing')) {
@@ -486,7 +493,11 @@ export class RsvpPlayer extends LitElement {
   }
 
   private _resetSession() {
-    this.words = this.text.trim() ? parseText(this.text.trim()) : [];
+    if (this.session) {
+      this.words = parseSession(this.session);
+    } else {
+      this.words = this.text.trim() ? parseText(this.text.trim()) : [];
+    }
     this.index = 0;
   }
 
@@ -530,6 +541,7 @@ export class RsvpPlayer extends LitElement {
   private _onTextInput(e: Event) {
     const target = e.target as HTMLTextAreaElement;
     this.text = target.value;
+    this.session = serializeSession(parseText(this.text));
   }
 
   private _onWpmInput(e: Event) {

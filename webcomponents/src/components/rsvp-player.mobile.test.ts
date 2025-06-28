@@ -3,6 +3,8 @@ import '@testing-library/jest-dom';
 import { jest } from '@jest/globals';
 import { fireEvent, within } from '@testing-library/dom';
 import { RsvpPlayer } from './rsvp-player';
+import { parseText } from '../parsers/tokenizer';
+import { serializeSession } from '../parsers/session';
 
 describe('RsvpPlayer mobile layout', () => {
   it('includes mobile fullscreen styles', () => {
@@ -56,7 +58,7 @@ describe('RsvpPlayer mobile layout', () => {
 
     it('rewinds and fast-forwards on swipe', async () => {
       const el = document.querySelector<RsvpPlayer>(TAG)!;
-      el.text = 'one two three four five six seven eight nine ten';
+      el.session = serializeSession(parseText('one two three four five six seven eight nine ten'));
       await el.updateComplete;
       Object.defineProperty(el, 'clientWidth', { configurable: true, value: 100 });
       (el as any).index = 5;
@@ -87,7 +89,7 @@ describe('RsvpPlayer mobile layout', () => {
     it('ignores swipe gestures when disabled', async () => {
       const el = document.querySelector<RsvpPlayer>(TAG)!;
       el.gestures = { ...el.gestures, swipe: false };
-      el.text = 'one two three four five';
+      el.session = serializeSession(parseText('one two three four five'));
       await el.updateComplete;
       const word = el.shadowRoot!.querySelector('.word') as HTMLElement;
       (el as any).index = 2;

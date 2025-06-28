@@ -1,5 +1,7 @@
 import '@testing-library/jest-dom';
 import { RsvpPlayer } from './rsvp-player';
+import { parseText } from '../parsers/tokenizer';
+import { serializeSession } from '../parsers/session';
 
 const TAG = 'rsvp-player';
 
@@ -16,7 +18,7 @@ describe('RsvpPlayer punctuation scopes', () => {
 
   it('renders nested punctuation scopes', async () => {
     const el = document.querySelector<RsvpPlayer>(TAG)!;
-    el.text = TEXT;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     (el as any).index = 6; // word "shape"

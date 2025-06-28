@@ -3,13 +3,15 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
 import { RsvpPlayer } from './rsvp-player';
+import { parseText } from '../parsers/tokenizer';
+import { serializeSession } from '../parsers/session';
 
 const PLAYER_TAG = 'rsvp-player';
 const SETTINGS_TAG = 'rsvp-settings';
 const CONTROLS_TAG = 'rsvp-controls';
 const SETTINGS_BUTTON_SELECTOR = 'button[aria-label="Settings"]';
 const TEXT = 'hello world';
-const TEMPLATE = `<${PLAYER_TAG} text="${TEXT}"></${PLAYER_TAG}>`;
+const TEMPLATE = `<${PLAYER_TAG}></${PLAYER_TAG}>`;
 if (!customElements.get(PLAYER_TAG)) {
   customElements.define(PLAYER_TAG, RsvpPlayer);
 }
@@ -18,6 +20,7 @@ describe('RsvpPlayer settings pane', () => {
   it('shows settings pane when settings button clicked', async () => {
     document.body.innerHTML = TEMPLATE;
     const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
@@ -35,6 +38,7 @@ describe('RsvpPlayer settings pane', () => {
   it('closes settings pane when close button clicked', async () => {
     document.body.innerHTML = TEMPLATE;
     const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
@@ -52,6 +56,7 @@ describe('RsvpPlayer settings pane', () => {
   it('shows settings pane on swipe up gesture', async () => {
     document.body.innerHTML = TEMPLATE;
     const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     const down = new Event('pointerdown');
@@ -68,6 +73,7 @@ describe('RsvpPlayer settings pane', () => {
   it('closes settings pane on swipe down gesture', async () => {
     document.body.innerHTML = TEMPLATE;
     const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
@@ -91,6 +97,7 @@ describe('RsvpPlayer settings pane', () => {
   it('prevents default page refresh when swiping', async () => {
     document.body.innerHTML = TEMPLATE;
     const el = document.querySelector(PLAYER_TAG)! as RsvpPlayer;
+    el.session = serializeSession(parseText(TEXT));
     await el.updateComplete;
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
