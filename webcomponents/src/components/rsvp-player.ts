@@ -4,6 +4,66 @@ import './rsvp-settings';
 import './rsvp-controls';
 import './rsvp-fullscreen';
 
+interface Token {
+  text: string;
+  scopes: string[];
+}
+
+const OPENERS = ['(', '[', '{', '"', "'"] as const;
+const CLOSERS: Record<string, string> = {
+  ')': '(',
+  ']': '[',
+  '}': '{',
+  '"': '"',
+  "'": "'",
+};
+
+function parseText(text: string): Token[] {
+  const tokens: Token[] = [];
+  const stack: string[] = [];
+  let word = '';
+  const pushWord = () => {
+    if (word) {
+      tokens.push({ text: word, scopes: [...stack] });
+      word = '';
+    }
+  };
+
+  for (const ch of text) {
+    if ((OPENERS as readonly string[]).includes(ch)) {
+      pushWord();
+      stack.push(ch);
+    } else if (Object.prototype.hasOwnProperty.call(CLOSERS, ch)) {
+      pushWord();
+      if (stack.at(-1) === CLOSERS[ch]) {
+        stack.pop();
+      }
+    } else if (/\s/.test(ch)) {
+      pushWord();
+    } else {
+      word += ch;
+    }
+  }
+  pushWord();
+  return tokens;
+}
+
+function formatToken(token: Token): string {
+  const closingMap: Record<string, string> = {
+    '(': ')',
+    '[': ']',
+    '{': '}',
+    '"': '"',
+    "'": "'",
+  };
+  const prefix = token.scopes.join('');
+  const suffix = [...token.scopes]
+    .reverse()
+    .map(s => closingMap[s] ?? '')
+    .join('');
+  return `${prefix}${token.text}${suffix}`;
+}
+
 export class RsvpPlayer extends LitElement {
   // Expose only external properties; internal state managed via @state
   static properties = {
@@ -25,7 +85,7 @@ export class RsvpPlayer extends LitElement {
   /** Playback state */
   @state() private playing: boolean;
   /** Parsed words from text */
-  @state() private words: string[];
+  @state() private words: Token[];
   /** Current word index */
   @state() private index: number;
   /** Visibility state for settings pane */
@@ -204,7 +264,7 @@ export class RsvpPlayer extends LitElement {
           @touchmove=${this._onTouchMove}
           @touchend=${this._onTouchEnd}
         >
-          ${this.words.length > 0 ? this.words[this.index] : 'Loading...'}
+          ${this.words.length > 0 ? formatToken(this.words[this.index]) : 'Loading...'}
         </div>
 
         <div class="progress-bar-container" @click=${this._onProgressBarClick}>
@@ -411,7 +471,7 @@ export class RsvpPlayer extends LitElement {
   }
 
   private _resetSession() {
-    this.words = this.text.trim() ? this.text.trim().split(/\s+/) : [];
+    this.words = this.text.trim() ? parseText(this.text.trim()) : [];
     this.index = 0;
   }
 
