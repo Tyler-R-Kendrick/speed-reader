@@ -218,7 +218,13 @@ export class RsvpSettings extends LitElement {
         ${pasteActive ? html`
           <div>
             <label for="text-input">Text to Display:</label>
-            <textarea id="text-input" .value=${this.text} @input=${this._onTextInput}></textarea>
+            <textarea
+              id="text-input"
+              .value=${this.text}
+              @input=${this._onTextInput}
+              ?readonly=${this.url !== ''}
+              aria-readonly=${this.url !== ''}
+            ></textarea>
           </div>
         ` : html`
           <div>

@@ -5,6 +5,7 @@ import './rsvp-settings';
 import type { RsvpSettings } from './rsvp-settings';
 
 const TAG = 'rsvp-settings';
+const TEST_URL = 'http://example.com';
 
 describe('RsvpSettings', () => {
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe('RsvpSettings', () => {
       text: async () => '<html><body>Hello World</body></html>'
     }));
     (global as any).fetch = fetchMock;
-    el.url = 'http://example.com';
+    el.url = TEST_URL;
     await el.updateComplete;
     const loadButton = el.shadowRoot!.querySelector('.load-url') as HTMLButtonElement;
     const listener = jest.fn();
@@ -42,7 +43,15 @@ describe('RsvpSettings', () => {
     fireEvent.click(loadButton);
     await Promise.resolve();
     await Promise.resolve();
-    expect(fetchMock).toHaveBeenCalledWith('http://example.com');
+    expect(fetchMock).toHaveBeenCalledWith(TEST_URL);
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Hello World' }));
+  });
+
+  it('disables textarea when url is set', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    el.url = TEST_URL;
+    await el.updateComplete;
+    const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea).toHaveAttribute('readonly');
   });
 });
