@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import './rsvp-controls';
-import { jest } from "@jest/globals";
+import { jest } from '@jest/globals';
 import { RsvpControls } from './rsvp-controls';
 
 describe('RsvpControls', () => {

@@ -18,29 +18,34 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
   - Words are centered in a focal point sized by the longest word in the session
   - Punctuation markers appear before/after the word, stacking to show nesting
 
-## 3. Functional Requirements
+## 3. Implemented Features
+- Lit-based RSVP player with keyboard and touch controls
+- Rewind/fast-forward 5 words
+- Progress bar with seek support
+- Settings pane for text input, URL loading and font size
+- Fullscreen toggle
+
+## 4. Planned Features
 1. **Configurable Control** ([feature](features/configurable_control.feature))
-   - Adjustable WPM range (100–800, default 300). Comprehension drops above 300 wpm ([Di Nocera et al.](https://www.sciencedirect.com/science/article/pii/S0747563214007663), [Ricciardi et al.](https://www.researchgate.net/profile/Orlando-Ricciardi/publication/328925418_Rapid_serial_visual_presentation_Degradation_of_inferential_reading_comprehension_as_a_function_of_speed/links/5e5f7ec04585152ce8053ccd/Rapid-serial-visual_presentation-Degradation-of-inferential-reading-comprehension-as-a-function-of-speed.pdf)). See [design decision](design/decisions/0001-wpm-range.md).
-   - Dynamic speed control: Auto-adjust pacing based on comprehension quiz results.
+   - Adjustable WPM range (100–800, default 300) – implemented. See [design decision](design/decisions/0001-wpm-range.md).
+   - Dynamic speed control based on comprehension quiz results – planned.
 2. **Gradient-Guided Text** ([feature](features/gradient_guided_text.feature))
    - BeeLine-style color gradients for continuous text to guide eye movement ([WestEd BeeLine Study](https://www.rif.org/sites/default/files/documents/2019/10/24/Support_Materials/BeeLineWestEdStudyFinal.pdf)).
 3. **LLM Summary** ([feature](features/llm_summary.feature))
    - LLM summary option using user-supplied endpoint/key.
 4. **Comprehension & Fatigue Monitoring** ([feature](features/comprehension_fatigue.feature))
    - Visual fatigue alerts: Detect blink suppression and prompt breaks ([Di Nocera et al.](https://www.sciencedirect.com/science/article/pii/S0747563214007663)).
-5. **User Control & Navigation**
-   - Instant pause/rewind/slowdown via buttons or gestures ([Aldinhe Study](https://journal.aldinhe.ac.uk/index.php/jldhe/article/view/970)).
-6. **Eye-Tracking Integration** ([feature](features/eye_tracking_integration.feature))
+5. **Eye-Tracking Integration** ([feature](features/eye_tracking_integration.feature))
    - Gaze-based pausing and regression support if hardware is available ([Rayner & Pollatsek](https://www.mdpi.com/2226-471X/9/12/360)).
 
-## 4. Non-Functional Requirements
+## 5. Non-Functional Requirements
 - **Performance:** <50 ms latency per word at 800 wpm
 - **Cross-Platform:** Responsive web, browser extensions, offline PWA, future native apps
 - **Offline Support:** PWA must work offline (service worker, IndexedDB)
 - **Accessibility:** WCAG 2.1 AA, adjustable font/contrast, ARIA labels
 - **Code Quality:** TypeScript, ESLint, Prettier, 90% unit test coverage
 
-## 5. Architecture & Technology
+## 6. Architecture & Technology
 - **Frontend:** TypeScript, Lit (Web Components), Tailwind CSS
 - **Bundling:** Vite + SWC
 - **Testing:** Jest + Testing Library
@@ -48,13 +53,13 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - **NLP/OCR:** Tesseract.js
 - **State:** Redux-style store (Proxy + events)
 
-## 6. Milestone 0 (MVP)
+## 7. Milestone 0 (MVP)
 - Lit-based RSVP player (play/pause, speed control)
 - Chrome extension to inject player on any selection
 - PWA shell with text input and offline caching
 - Unit tests ≥80% coverage
 
-## 7. References
+## 8. References
 - Di Nocera et al., 2014 – RSVP & comprehension limits
 - WestEd BeeLine Study, 2019 – Gradient guidance
 - Rayner & Pollatsek, 2015 – Eye movements & reading

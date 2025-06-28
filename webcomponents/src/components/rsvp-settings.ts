@@ -20,6 +20,17 @@ export class RsvpSettings extends LitElement {
       z-index: 10;
       overflow-y: auto;
       overscroll-behavior: contain;
+      transform: translateY(100%);
+      animation: slide-up 0.3s ease-out forwards;
+    }
+
+    @keyframes slide-up {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
     }
 
     @media (max-width: 600px) {
@@ -95,6 +106,20 @@ export class RsvpSettings extends LitElement {
     }
     .settings-pane button:hover {
       background-color: #CC0000;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: #FFFFFF;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .close-button:hover {
+      color: #CCCCCC;
     }
   `;
 
@@ -207,6 +232,11 @@ export class RsvpSettings extends LitElement {
     const pasteActive = this.mode === 'paste';
     return html`
       <div class="settings-pane">
+        <button class="close-button" aria-label="Close settings" @click=${this._onClose}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
         <nav class="tabs" role="tablist">
           <button class=${pasteActive ? 'active' : ''} role="tab" aria-selected=${pasteActive} @click=${() => { this.mode = 'paste'; }}>
             Paste Text
@@ -218,7 +248,13 @@ export class RsvpSettings extends LitElement {
         ${pasteActive ? html`
           <div>
             <label for="text-input">Text to Display:</label>
-            <textarea id="text-input" .value=${this.text} @input=${this._onTextInput}></textarea>
+            <textarea
+              id="text-input"
+              .value=${this.text}
+              @input=${this._onTextInput}
+              ?readonly=${this.url !== ''}
+              aria-readonly=${this.url !== ''}
+            ></textarea>
           </div>
         ` : html`
           <div>
@@ -234,7 +270,6 @@ export class RsvpSettings extends LitElement {
             <input type="number" id="font-size-number-input" min="1" max="10" step="0.1" .value=${this.wordFontSize.toString()} @input=${this._onFontSizeInput} style="width: 60px;">
           </div>
         </div>
-        <button @click=${this._onClose}>Close Settings</button>
       </div>
     `;
   }
