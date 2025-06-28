@@ -4,9 +4,11 @@ import './rsvp-settings';
 import './rsvp-controls';
 import './rsvp-fullscreen';
 
-interface Token {
+export interface Token {
   text: string;
   scopes: string[];
+  markers: string[];
+  extraPause: number;
 }
 
 const OPENERS = ['(', '[', '{', '"', "'"] as const;
@@ -18,35 +20,98 @@ const CLOSERS: Record<string, string> = {
   "'": "'",
 };
 
-function parseText(text: string): Token[] {
+/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity */
+export function parseText(text: string): Token[] {
   const tokens: Token[] = [];
   const stack: string[] = [];
   let word = '';
+  let sentenceIndices: number[] = [];
+
   const pushWord = () => {
     if (word) {
-      tokens.push({ text: word, scopes: [...stack] });
+      tokens.push({ text: word, scopes: [...stack], markers: [], extraPause: 0 });
+      sentenceIndices.push(tokens.length - 1);
       word = '';
     }
   };
 
-  for (const ch of text) {
+  for (let i = 0; i < text.length;) {
+    const ch = text[i];
+
+    if (text.slice(i, i + 3) === '...') {
+      pushWord();
+      for (let j = 1; j <= 3; j++) {
+        tokens.push({ text: '.'.repeat(j), scopes: [...stack], markers: [], extraPause: 0 });
+        sentenceIndices.push(tokens.length - 1);
+      }
+      i += 3;
+      continue;
+    }
+
     if ((OPENERS as readonly string[]).includes(ch)) {
       pushWord();
       stack.push(ch);
-    } else if (Object.prototype.hasOwnProperty.call(CLOSERS, ch)) {
+      i++;
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(CLOSERS, ch)) {
       pushWord();
       if (stack.at(-1) === CLOSERS[ch]) {
         stack.pop();
       }
-    } else if (/\s/.test(ch)) {
-      pushWord();
-    } else {
-      word += ch;
+      i++;
+      continue;
     }
+
+    if (/\s/.test(ch)) {
+      pushWord();
+      i++;
+      continue;
+    }
+
+    if (ch === ',') {
+      pushWord();
+      if (tokens.length > 0) {
+        const last = tokens.at(-1)!;
+        last.extraPause += 1;
+      }
+      i++;
+      continue;
+    }
+
+    if (ch === '.' || ch === '!' || ch === '?') {
+      pushWord();
+      let j = i;
+      const markers: string[] = [];
+      while (j < text.length) {
+        if (text.slice(j, j + 3) === '...') {
+          break;
+        }
+        const c = text[j];
+        if (c === '!' || c === '?') {
+          markers.push(c);
+        } else if (c !== '.') {
+          break;
+        }
+        j++;
+      }
+      const dedup = [...new Set(markers)];
+      for (const idx of sentenceIndices) {
+        tokens[idx].markers = dedup;
+      }
+      sentenceIndices = [];
+      i = j;
+      continue;
+    }
+
+    word += ch;
+    i++;
   }
   pushWord();
   return tokens;
 }
+/* eslint-enable max-lines-per-function, sonarjs/cognitive-complexity */
 
 function formatToken(token: Token): string {
   const closingMap: Record<string, string> = {
@@ -134,6 +199,15 @@ export class RsvpPlayer extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+    }
+
+    .punctuation {
+      position: absolute;
+      bottom: -0.6em;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.5em;
     }
 
     .controls {
@@ -264,7 +338,12 @@ export class RsvpPlayer extends LitElement {
           @touchmove=${this._onTouchMove}
           @touchend=${this._onTouchEnd}
         >
-          ${this.words.length > 0 ? formatToken(this.words[this.index]) : 'Loading...'}
+          ${this.words.length > 0 ? html`
+            <span>${formatToken(this.words[this.index])}</span>
+            ${this.words[this.index].markers.length > 0
+              ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
+              : ''}
+          ` : 'Loading...'}
         </div>
 
         <div class="progress-bar-container" @click=${this._onProgressBarClick}>
@@ -489,6 +568,12 @@ export class RsvpPlayer extends LitElement {
   }
 
   private _nextWord() {
+    const token = this.words[this.index];
+    if (token && token.extraPause > 0) {
+      token.extraPause--;
+      return;
+    }
+
     if (this.index < this.words.length - 1) {
       this.index++;
     } else {

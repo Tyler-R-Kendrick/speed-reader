@@ -4,6 +4,7 @@
 - Root (`<sr-rsvp-player>`)
 - Word Display (`.word`)
 - Punctuation Markers (`.punctuation`)
+- [Punctuation Rules](../punctuation-rules.md)
 - Controls Slot (`slot[name=controls]`)
 - Progress Bar (`.progress`)
 - Settings Pane (`sr-rsvp-settings`)
