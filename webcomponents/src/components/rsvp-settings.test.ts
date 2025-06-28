@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function, sonarjs/no-duplicate-string */
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
@@ -44,5 +45,34 @@ describe('RsvpSettings', () => {
     await Promise.resolve();
     expect(fetchMock).toHaveBeenCalledWith('http://example.com');
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Hello World' }));
+  });
+
+  it('emits close event when _onClose called', () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    const listener = jest.fn();
+    el.addEventListener('close', listener);
+    (el as any)._onClose();
+    expect(listener).toHaveBeenCalled();
+  });
+
+  it('emits close event on simulated swipe down', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    (el as any)._touchStartY = 100;
+    const listener = jest.fn();
+    el.addEventListener('close', listener);
+    (el as any)._onPointerUp({ pointerType: 'touch', clientY: 170, preventDefault() {} } as PointerEvent);
+    expect(listener).toHaveBeenCalled();
+  });
+
+  it('updates aria-selected on tab change', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const tabs = el.shadowRoot!.querySelectorAll('nav[role="tablist"] button');
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(tabs[1]!);
+    await el.updateComplete;
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('false');
+    expect(tabs[1]!.getAttribute('aria-selected')).toBe('true');
   });
 });
