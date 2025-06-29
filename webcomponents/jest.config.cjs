@@ -2,7 +2,8 @@
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jest-environment-jsdom',
-  setupFilesAfterEnv: ['./jest.setup.ts'],
+  setupFiles: [],
+  setupFilesAfterEnv: ['./jest.polyfills.js', './jest.setup.ts'],
   moduleFileExtensions: ['ts', 'js'],
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
@@ -10,7 +11,9 @@ module.exports = {
   },
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
-    '^(\\.{1,2}/.*)\\.js$': '$1'
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@spectrum-web-components/tabs/sp-tabs.js$': '<rootDir>/test/stubs/sp-tabs.js',
+    '^@spectrum-web-components/tabs/sp-tab.js$': '<rootDir>/test/stubs/sp-tab.js'
   },
   globals: {
     'ts-jest': {

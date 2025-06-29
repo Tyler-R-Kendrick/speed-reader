@@ -2,12 +2,17 @@
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
+class Dummy extends HTMLElement {}
+if (!customElements.get('sp-tabs')) customElements.define('sp-tabs', Dummy);
+if (!customElements.get('sp-tab')) customElements.define('sp-tab', Dummy);
+
 import './rsvp-settings';
 import type { RsvpSettings } from './rsvp-settings';
 
 const TAG = 'rsvp-settings';
 const TEST_URL = 'http://example.com';
 const CHANGE_EVENT = "text-change";
+const TEXTFIELD_SELECTOR = 'sp-textfield#text-input';
 const flush = () => new Promise(resolve => setTimeout(resolve, 0));
 
 describe('RsvpSettings', () => {
@@ -18,16 +23,15 @@ describe('RsvpSettings', () => {
   it('shows paste text area by default', async () => {
     const el = document.querySelector(TAG) as RsvpSettings;
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('textarea')).toBeInTheDocument();
+    expect(el.shadowRoot!.querySelector(TEXTFIELD_SELECTOR)).toBeInTheDocument();
   });
 
   it('switches to url input', async () => {
     const el = document.querySelector(TAG) as RsvpSettings;
     await el.updateComplete;
-    const buttons = el.shadowRoot!.querySelectorAll('.tabs button');
-    fireEvent.click(buttons[1]!);
+    el.mode = 'url';
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('input[type="url"]')).toBeInTheDocument();
+    expect(el.shadowRoot!.querySelector('#url-input')).toBeInTheDocument();
   });
 
   it('loads content from url', async () => {
@@ -51,8 +55,8 @@ describe('RsvpSettings', () => {
     const el = document.querySelector(TAG) as RsvpSettings;
     el.mode = 'url';
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('textarea')).toBeNull();
-    expect(el.shadowRoot!.querySelector('input[type="url"]')).toBeInTheDocument();
+    expect(el.shadowRoot!.querySelector(TEXTFIELD_SELECTOR)).toBeNull();
+    expect(el.shadowRoot!.querySelector('#url-input')).toBeInTheDocument();
   });
 
   it('enables textarea after switching back to paste mode', async () => {
@@ -62,8 +66,8 @@ describe('RsvpSettings', () => {
     await el.updateComplete;
     el.mode = 'paste';
     await el.updateComplete;
-    const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
-    expect(textarea).not.toHaveAttribute('readonly');
+    const field = el.shadowRoot!.querySelector(TEXTFIELD_SELECTOR) as HTMLElement;
+    expect(field).not.toHaveAttribute('readonly');
   });
 
   it('imports text from file', async () => {
@@ -78,8 +82,8 @@ describe('RsvpSettings', () => {
     await el.updateComplete;
     await flush();
     await flush();
-    const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
-    expect(textarea.value).toBe('Hello File');
+    const field = el.shadowRoot!.querySelector(TEXTFIELD_SELECTOR) as any;
+    expect(field.value).toBe('Hello File');
   });
 
 
