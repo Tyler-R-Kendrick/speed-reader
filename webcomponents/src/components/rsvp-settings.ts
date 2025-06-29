@@ -1,5 +1,11 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-close.js';
+import '@spectrum-web-components/button/sp-button.js';
+import '@spectrum-web-components/tabs/sp-tabs.js';
+import '@spectrum-web-components/tabs/sp-tab.js';
+import '@spectrum-web-components/textfield/sp-textfield.js';
+import '@spectrum-web-components/field-label/sp-field-label.js';
 import {
   HtmlParser,
   MarkdownParser,
@@ -87,25 +93,7 @@ export class RsvpSettings extends LitElement {
       max-width: 400px;
     }
 
-    .tabs {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      max-width: 400px;
-    }
 
-    .tabs button {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #555;
-      background-color: #222;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .tabs button.active {
-      background-color: #ff0000;
-    }
 
     .settings-pane label {
       display: block;
@@ -394,42 +382,37 @@ export class RsvpSettings extends LitElement {
     const pasteActive = this.mode === 'paste';
     return html`
       <div class="settings-pane">
-        <button class="close-button" aria-label="Close settings" @click=${this._onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <nav class="tabs" role="tablist">
-          <button class=${pasteActive ? 'active' : ''} role="tab" aria-selected=${pasteActive} @click=${() => { this.mode = 'paste'; }}>
-            Paste Text
-          </button>
-          <button class=${pasteActive ? '' : 'active'} role="tab" aria-selected=${!pasteActive} @click=${() => { this.mode = 'url'; }}>
-            From URL
-          </button>
-        </nav>
+        <sp-button class="close-button" quiet aria-label="Close settings" @click=${this._onClose}>
+          <sp-icon-close></sp-icon-close>
+        </sp-button>
+        <sp-tabs selected=${pasteActive ? 'paste' : 'url'} @change=${(e: Event) => { this.mode = (e.target as any).selected as 'paste' | 'url'; }}>
+          <sp-tab value="paste">Paste Text</sp-tab>
+          <sp-tab value="url">From URL</sp-tab>
+        </sp-tabs>
         ${pasteActive ? html`
           <div>
-            <label for="text-input">Text to Display:</label>
-            <textarea
+            <sp-field-label for="text-input">Text to Display:</sp-field-label>
+            <sp-textfield
+              multiline
               id="text-input"
               .value=${this.text}
               @input=${this._onTextInput}
               ?readonly=${this.mode === 'url'}
               aria-readonly=${this.mode === 'url'}
-            ></textarea>
-            <label for="file-input">Import File:
-              <input
-                id="file-input"
-                type="file"
-                accept=".txt,.html,.md,.markdown,.docx,.odt,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text"
-                @change=${this._onFileChange}
-              ></label>
+            ></sp-textfield>
+            <sp-field-label for="file-input">Import File:</sp-field-label>
+            <input
+              id="file-input"
+              type="file"
+              accept=".txt,.html,.md,.markdown,.docx,.odt,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text"
+              @change=${this._onFileChange}
+            >
           </div>
         ` : html`
           <div>
-            <label for="url-input">URL to Load:</label>
-            <input id="url-input" type="url" .value=${this.url} @input=${this._onUrlInput}>
-            <button class="load-url" @click=${this._loadUrl}>Load Content</button>
+            <sp-field-label for="url-input">URL to Load:</sp-field-label>
+            <sp-textfield id="url-input" type="url" .value=${this.url} @input=${this._onUrlInput}></sp-textfield>
+            <sp-button class="load-url" @click=${this._loadUrl}>Load Content</sp-button>
           </div>
         `}
         <fieldset>
