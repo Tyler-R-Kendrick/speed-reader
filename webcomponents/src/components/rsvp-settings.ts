@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { HtmlParser, TextParser } from '../parsers/content-parser';
+import { HtmlParser, MarkdownParser, TextParser } from '../parsers/content-parser';
 import { requestSummary, LlmConfig } from '../llm/summary';
 import '@spectrum-web-components/button/sp-button.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-close.js';
@@ -187,7 +187,12 @@ export class RsvpSettings extends LitElement {
     try {
       const res = await fetch(this.url);
       const text = await res.text();
-      const parser = new HtmlParser();
+      const ct = res.headers?.get('content-type') ?? '';
+      const isMarkdown =
+        ct.includes('markdown') ||
+        this.url.toLowerCase().endsWith('.md') ||
+        this.url.toLowerCase().endsWith('.markdown');
+      const parser = isMarkdown ? new MarkdownParser() : new HtmlParser();
       const parsed = parser.parse(text);
       const processed = await this._maybeSummarize(parsed);
       this.dispatchEvent(
@@ -206,7 +211,15 @@ export class RsvpSettings extends LitElement {
     const type = file.type;
     const isHtml =
       type.includes('html') || ext === 'html' || ext === 'htm';
-    const parser = isHtml ? new HtmlParser() : new TextParser();
+    const isMarkdown = type.includes('markdown') || ext === 'md' || ext === 'markdown';
+    let parser: HtmlParser | MarkdownParser | TextParser;
+    if (isHtml) {
+      parser = new HtmlParser();
+    } else if (isMarkdown) {
+      parser = new MarkdownParser();
+    } else {
+      parser = new TextParser();
+    }
     const reader = new FileReader();
     reader.addEventListener('load', () => {
       const content = (reader.result as string) ?? '';
