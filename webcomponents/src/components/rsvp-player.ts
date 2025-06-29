@@ -143,12 +143,13 @@ export class RsvpPlayer extends LitElement {
 
     .sentence-progress {
       position: absolute;
-      bottom: -2px;
-      left: 0;
+      bottom: 0;
+      left: 50%;
       height: 2px;
       background-color: #FF0000;
       width: 100%;
       pointer-events: none;
+      transform: translateX(-50%);
       transition: width 0.1s linear;
     }
 
