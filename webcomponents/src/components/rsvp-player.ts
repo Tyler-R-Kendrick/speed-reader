@@ -415,9 +415,28 @@ export class RsvpPlayer extends LitElement {
     this._updateSentenceIndex();
   }
 
-  private _updateFontSize(rect: DOMRectReadOnly) {
-    const size = Math.min(rect.height * 0.5, rect.width * 0.2);
-    this.style.setProperty('--auto-font-size', `${size}px`);
+  private _updateFontSize() {
+    const rect = this.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
+      return;
+    }
+    const text = formatToken(this.words[this.index]);
+    const measure = document.createElement('span');
+    measure.textContent = text;
+    measure.style.position = 'absolute';
+    measure.style.visibility = 'hidden';
+    measure.style.whiteSpace = 'nowrap';
+    measure.style.fontWeight = 'bold';
+    document.body.append(measure);
+    let fontSize = rect.height * 0.5;
+    measure.style.fontSize = `${fontSize}px`;
+    const maxWidth = rect.width * 0.9;
+    const width = measure.getBoundingClientRect().width;
+    if (width > maxWidth) {
+      fontSize *= maxWidth / width;
+    }
+    measure.remove();
+    this.style.setProperty('--auto-font-size', `${fontSize}px`);
   }
 
   /** Keyboard shortcuts: Space, Arrows, F */
@@ -442,11 +461,11 @@ export class RsvpPlayer extends LitElement {
     this.addEventListener('touchstart', this._onSettingsTouchStart, { passive: false });
     this.addEventListener('touchend', this._onSettingsTouchEnd, { passive: false });
 
-    this._resizeObserver = new ResizeObserver(entries => {
-      const rect = entries[0].contentRect;
-      this._updateFontSize(rect);
+    this._resizeObserver = new ResizeObserver(() => {
+      this._updateFontSize();
     });
     this._resizeObserver.observe(this);
+    this._updateFontSize();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -470,8 +489,8 @@ export class RsvpPlayer extends LitElement {
     if (changed.has('wpm') && this.playing) {
       this._startTimer();
     }
-    if (changed.size > 0) {
-      this._updateFontSize(this.getBoundingClientRect());
+    if (changed.has('index') || changed.has('text') || changed.has('session')) {
+      this._updateFontSize();
     }
   }
 
