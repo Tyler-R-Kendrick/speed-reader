@@ -141,6 +141,17 @@ export class RsvpPlayer extends LitElement {
       font-size: 0.5em;
     }
 
+    .sentence-progress {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      height: 2px;
+      background-color: #FF0000;
+      width: 100%;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
     .controls {
       background-color: rgba(0, 0, 0, 0.8); /* mediaPlayer.controls.background.color.default */
       padding: 10px;
@@ -257,6 +268,7 @@ export class RsvpPlayer extends LitElement {
     // Replay logic might need to be passed or handled differently if rsvp-controls doesn't support it directly.
 
     const progressPercent = this.words.length > 0 ? ((this.index + 1) / this.words.length) * 100 : 0;
+    const sentenceProgressPercent = this._sentenceProgress();
 
     return html`
       ${this.showSettingsPane ? html`
@@ -286,6 +298,7 @@ export class RsvpPlayer extends LitElement {
             ${this.words[this.index].markers.length > 0
               ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
               : ''}
+            <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
           ` : 'Loading...'}
         </div>
 
@@ -535,6 +548,38 @@ export class RsvpPlayer extends LitElement {
       clearInterval(this.timerId);
       this.timerId = undefined;
     }
+  }
+
+  private _currentSentenceBounds() {
+    let start = 0;
+    for (let i = this.index; i > 0; i--) {
+      if (this.words[i - 1].sentenceEnd) {
+        start = i;
+        break;
+      }
+    }
+
+    let end = this.words.length - 1;
+    for (let i = this.index; i < this.words.length; i++) {
+      end = i;
+      if (this.words[i].sentenceEnd) {
+        break;
+      }
+    }
+
+    return { start, end };
+  }
+
+  private _sentenceProgress() {
+    if (this.words.length === 0) {
+      return 0;
+    }
+    const { start, end } = this._currentSentenceBounds();
+    const total = end - start;
+    if (total <= 0) {
+      return 0;
+    }
+    return ((total - (this.index - start)) / total) * 100;
   }
 
   private _updateSentenceIndex() {
