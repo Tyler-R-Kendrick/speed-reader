@@ -6,8 +6,10 @@ export interface ContentParser {
  * Pass-through parser for plain text input.
  */
 export class TextParser implements ContentParser {
-  async parse(content: string): Promise<string> {
-    return content;
+  async parse(content: string | ArrayBuffer): Promise<string> {
+    return typeof content === 'string'
+      ? content
+      : new TextDecoder().decode(content);
   }
 }
 
@@ -21,8 +23,11 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 export class MarkdownParser implements ContentParser {
   private _htmlParser = new HtmlParser();
 
-  async parse(content: string): Promise<string> {
-    const html = marked.parse(content);
+  async parse(content: string | ArrayBuffer): Promise<string> {
+    const text = typeof content === 'string'
+      ? content
+      : new TextDecoder().decode(content);
+    const html = marked.parse(text);
     return this._htmlParser.parse(html);
   }
 }
@@ -33,8 +38,11 @@ export class MarkdownParser implements ContentParser {
  * text from the <article> element if present, falling back to <body>.
  */
 export class HtmlParser implements ContentParser {
-  async parse(content: string): Promise<string> {
-    const doc = new DOMParser().parseFromString(content, 'text/html');
+  async parse(content: string | ArrayBuffer): Promise<string> {
+    const input = typeof content === 'string'
+      ? content
+      : new TextDecoder().decode(content);
+    const doc = new DOMParser().parseFromString(input, 'text/html');
 
     for (const el of doc.querySelectorAll('script,style,noscript,template,head')) {
       el.remove();
@@ -45,14 +53,14 @@ export class HtmlParser implements ContentParser {
       return '';
     }
     const walker = doc.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    let text = '';
+    let result = '';
     while (walker.nextNode()) {
       const value = walker.currentNode.nodeValue?.trim() ?? '';
       if (value) {
-        text += `${value} `;
+        result += `${value} `;
       }
     }
-    return text.replaceAll(/\s+/g, ' ').trim();
+    return result.replaceAll(/\s+/g, ' ').trim();
   }
 }
 

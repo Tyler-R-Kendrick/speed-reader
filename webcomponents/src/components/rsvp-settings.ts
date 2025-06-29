@@ -204,11 +204,14 @@ export class RsvpSettings extends LitElement {
         this.url.toLowerCase().endsWith('.md') ||
         this.url.toLowerCase().endsWith('.markdown');
       const isPdf = ct.includes('pdf') || this.url.toLowerCase().endsWith('.pdf');
-      const parser = isPdf
-        ? new PdfParser()
-        : isMarkdown
-          ? new MarkdownParser()
-          : new HtmlParser();
+      let parser: HtmlParser | MarkdownParser | PdfParser;
+      if (isPdf) {
+        parser = new PdfParser();
+      } else if (isMarkdown) {
+        parser = new MarkdownParser();
+      } else {
+        parser = new HtmlParser();
+      }
       const data = isPdf ? await res.arrayBuffer() : await res.text();
       const parsed = await parser.parse(data);
       const processed = await this._maybeSummarize(parsed);
@@ -220,7 +223,7 @@ export class RsvpSettings extends LitElement {
     }
   }
 
-  private _onFileChange(e: Event) {
+  private async _onFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -239,23 +242,17 @@ export class RsvpSettings extends LitElement {
     } else {
       parser = new TextParser();
     }
-    const reader = new FileReader();
-    reader.addEventListener('load', async () => {
-      const content = (reader.result as ArrayBuffer | string) ?? '';
+    try {
+      const content = isPdf ? await file.arrayBuffer() : await file.text();
       const parsed = await parser.parse(content);
-      this._maybeSummarize(parsed).then(processed => {
-        this.text = processed;
-        this.dispatchEvent(
-          new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
-        );
-      });
+      const processed = await this._maybeSummarize(parsed);
+      this.text = processed;
+      this.dispatchEvent(
+        new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
+      );
       input.value = '';
-    });
-    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
-    if (isPdf) {
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.readAsText(file);
+    } catch {
+      input.value = '';
     }
   }
 
