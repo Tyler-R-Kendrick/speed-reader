@@ -2,6 +2,9 @@
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
+class Dummy extends HTMLElement {}
+if (!customElements.get('sp-tabs')) customElements.define('sp-tabs', Dummy);
+if (!customElements.get('sp-tab')) customElements.define('sp-tab', Dummy);
 import { RsvpPlayer } from './rsvp-player';
 import { parseText } from '../parsers/tokenizer';
 import { serializeSession } from '../parsers/session';
@@ -28,7 +31,7 @@ describe('RsvpPlayer settings pane', () => {
     const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLButtonElement;
     expect(button).toBeVisible();
     expect(button.getAttribute('part')).toBe('settings-button');
-    const icon = button.querySelector('svg');
+    const icon = button.querySelector('sp-icon-settings');
     expect(icon).toBeTruthy();
     fireEvent.click(button);
     await el.updateComplete;
