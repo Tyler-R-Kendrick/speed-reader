@@ -134,28 +134,23 @@ export class RsvpPlayer extends LitElement {
     }
 
     .punctuation {
-      position: absolute;
-      bottom: -0.6em;
-      left: 50%;
-      transform: translateX(-50%);
       font-size: 0.5em;
+      margin-top: 0.25em;
     }
 
     .render-area {
-      position: relative;
-      display: inline-block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       line-height: 1;
     }
 
     .sentence-progress {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
       height: 2px;
       background-color: #FF0000;
       width: 100%;
       pointer-events: none;
-      transform: translateX(-50%);
+      margin-top: 0.25em;
       transition: width 0.1s linear;
     }
 
@@ -300,10 +295,10 @@ export class RsvpPlayer extends LitElement {
           ${this.words.length > 0 ? html`
             <div class="render-area">
               <span>${formatToken(this.words[this.index])}</span>
+              <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
               ${this.words[this.index].markers.length > 0
                 ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
                 : ''}
-              <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
             </div>
           ` : 'Loading...'}
         </div>
