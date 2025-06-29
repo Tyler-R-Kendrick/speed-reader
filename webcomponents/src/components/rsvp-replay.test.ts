@@ -21,7 +21,7 @@ describe('RsvpPlayer replay control', () => {
     await el.updateComplete;
     const controls = el.shadowRoot!.querySelector('rsvp-controls')!;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector('button') as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector('sp-button') as HTMLElement;
 
     // start playback
     fireEvent.click(button);

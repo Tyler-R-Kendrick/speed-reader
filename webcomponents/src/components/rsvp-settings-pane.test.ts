@@ -9,7 +9,7 @@ import { serializeSession } from '../parsers/session';
 const PLAYER_TAG = 'rsvp-player';
 const SETTINGS_TAG = 'rsvp-settings';
 const CONTROLS_TAG = 'rsvp-controls';
-const SETTINGS_BUTTON_SELECTOR = 'button[aria-label="Settings"]';
+const SETTINGS_BUTTON_SELECTOR = 'sp-button[aria-label="Settings"]';
 const TEXT = 'hello world';
 const TEMPLATE = `<${PLAYER_TAG}></${PLAYER_TAG}>`;
 if (!customElements.get(PLAYER_TAG)) {
@@ -25,10 +25,10 @@ describe('RsvpPlayer settings pane', () => {
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLElement;
     expect(button).toBeVisible();
     expect(button.getAttribute('part')).toBe('settings-button');
-    const icon = button.querySelector('svg');
+    const icon = button.querySelector('sp-icon-settings');
     expect(icon).toBeTruthy();
     fireEvent.click(button);
     await el.updateComplete;
@@ -43,11 +43,11 @@ describe('RsvpPlayer settings pane', () => {
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
     await (controls as any).updateComplete;
-    const open = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR)!;
+    const open = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR)! as HTMLElement;
     fireEvent.click(open);
     await el.updateComplete;
     const settings = el.shadowRoot!.querySelector(SETTINGS_TAG)!;
-    const close = settings.shadowRoot!.querySelector('.close-button') as HTMLButtonElement;
+    const close = settings.shadowRoot!.querySelector('.close-button') as HTMLElement;
     fireEvent.click(close);
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector(SETTINGS_TAG)).not.toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('RsvpPlayer settings pane', () => {
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLElement;
     fireEvent.click(button);
     await el.updateComplete;
     const settings = el.shadowRoot!.querySelector(SETTINGS_TAG)!;
@@ -102,7 +102,7 @@ describe('RsvpPlayer settings pane', () => {
 
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG)!;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(SETTINGS_BUTTON_SELECTOR) as HTMLElement;
     fireEvent.click(button);
     await el.updateComplete;
     const settings = el.shadowRoot!.querySelector(SETTINGS_TAG)!;

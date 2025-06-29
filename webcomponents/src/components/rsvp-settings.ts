@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { HtmlParser, TextParser } from '../parsers/content-parser';
 import { requestSummary, LlmConfig } from '../llm/summary';
+import '@spectrum-web-components/button/sp-button.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-close.js';
 
 const TEXT_CHANGE_EVENT = 'text-change';
 
@@ -148,20 +150,6 @@ export class RsvpSettings extends LitElement {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: transparent;
-      border: none;
-      color: #FFFFFF;
-      font-size: 24px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background-color 0.2s, color 0.2s;
-    }
-    .close-button:hover {
-      background-color: #FFFFFF;
-      color: #000000;
     }
   `;
 
@@ -352,11 +340,9 @@ export class RsvpSettings extends LitElement {
     const pasteActive = this.mode === 'paste';
     return html`
       <div class="settings-pane">
-        <button class="close-button" aria-label="Close settings" @click=${this._onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <sp-button quiet variant="secondary" class="close-button" aria-label="Close settings" @click=${this._onClose}>
+          <sp-icon-close></sp-icon-close>
+        </sp-button>
         <nav class="tabs" role="tablist">
           <button class=${pasteActive ? 'active' : ''} role="tab" aria-selected=${pasteActive} @click=${() => { this.mode = 'paste'; }}>
             Paste Text
