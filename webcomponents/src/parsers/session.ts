@@ -1,34 +1,59 @@
 export interface SessionToken {
   text: string;
   scopes: string[];
-  markers: string[];
   delay: number;
 }
 
-export interface SessionData {
+export interface SessionSentence {
   tokens: SessionToken[];
+  markers: string[];
+}
+
+export interface SessionData {
+  sentences: SessionSentence[];
 }
 
 import type { Token } from './tokenizer';
 
 export function tokensToSession(tokens: Token[]): SessionData {
-  return {
-    tokens: tokens.map(t => ({
-      text: t.text,
-      scopes: t.scopes,
-      markers: t.markers,
-      delay: t.extraPause,
-    })),
-  };
+  const sentences: SessionSentence[] = [];
+  let current: SessionSentence = { tokens: [], markers: [] };
+
+  for (const token of tokens) {
+    current.tokens.push({
+      text: token.text,
+      scopes: token.scopes,
+      delay: token.extraPause,
+    });
+
+    if (token.sentenceEnd) {
+      current.markers = token.markers;
+      sentences.push(current);
+      current = { tokens: [], markers: [] };
+    }
+  }
+
+  if (current.tokens.length > 0) {
+    sentences.push(current);
+  }
+
+  return { sentences };
 }
 
 export function sessionToTokens(session: SessionData): Token[] {
-  return session.tokens.map(t => ({
-    text: t.text,
-    scopes: t.scopes ?? [],
-    markers: t.markers ?? [],
-    extraPause: t.delay ?? 0,
-  }));
+  const tokens: Token[] = [];
+  for (const sentence of session.sentences) {
+    for (const [idx, t] of sentence.tokens.entries()) {
+      tokens.push({
+        text: t.text,
+        scopes: t.scopes ?? [],
+        markers: sentence.markers ?? [],
+        extraPause: t.delay ?? 0,
+        sentenceEnd: idx === sentence.tokens.length - 1,
+      });
+    }
+  }
+  return tokens;
 }
 
 export function serializeSession(tokens: Token[]): string {

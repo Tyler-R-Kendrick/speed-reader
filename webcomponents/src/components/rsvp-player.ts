@@ -66,6 +66,10 @@ export class RsvpPlayer extends LitElement {
   @state() private words: Token[];
   /** Current word index */
   @state() private index: number;
+  /** Current sentence index */
+  @state() private sentenceIndex: number = 0;
+  /** Total sentences */
+  @state() private totalSentences: number = 0;
   /** Visibility state for settings pane */
   @state() private showSettingsPane: boolean = false;
   /** Configurable keyboard shortcuts */
@@ -189,6 +193,12 @@ export class RsvpPlayer extends LitElement {
       width: 0%; /* Initial width */
       transition: width 0.1s linear;
     }
+
+    .sentence-counter {
+      color: #FFFFFF;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
   `;
 
   constructor() {
@@ -197,6 +207,8 @@ export class RsvpPlayer extends LitElement {
     this.playing = false;
     this.words = [];
     this.index = 0;
+    this.sentenceIndex = 0;
+    this.totalSentences = 0;
     this.showSettingsPane = false;
   }
 
@@ -280,6 +292,9 @@ export class RsvpPlayer extends LitElement {
         <div class="progress-bar-container" @click=${this._onProgressBarClick}>
           <div class="progress-bar" style="width: ${progressPercent}%;"></div>
         </div>
+        ${this.totalSentences > 0
+          ? html`<div class="sentence-counter">${this.sentenceIndex}/${this.totalSentences}</div>`
+          : ''}
 
         <rsvp-controls
           .playing=${this.playing}
@@ -318,6 +333,7 @@ export class RsvpPlayer extends LitElement {
     if (isEnded) {
       this.index = 0;
       this.playing = true;
+      this._updateSentenceIndex();
     } else {
       this.playing = !this.playing;
     }
@@ -390,6 +406,7 @@ export class RsvpPlayer extends LitElement {
     if (this.index === this.words.length) {
         this.index = this.words.length - 1;
     }
+    this._updateSentenceIndex();
   }
 
   /** Keyboard shortcuts: Space, Arrows, F */
@@ -474,21 +491,25 @@ export class RsvpPlayer extends LitElement {
 
   private _rewind() {
     this.index = Math.max(0, this.index - RsvpPlayer.REWIND_WORDS);
+    this._updateSentenceIndex();
   }
 
   private _fastForward() {
     if (this.words.length > 0) {
       this.index = Math.min(this.words.length - 1, this.index + RsvpPlayer.FAST_FORWARD_WORDS);
+      this._updateSentenceIndex();
     }
   }
 
   private _stepBackward() {
     this.index = Math.max(0, this.index - 1);
+    this._updateSentenceIndex();
   }
 
   private _stepForward() {
     if (this.words.length > 0) {
       this.index = Math.min(this.words.length - 1, this.index + 1);
+      this._updateSentenceIndex();
     }
   }
 
@@ -499,6 +520,8 @@ export class RsvpPlayer extends LitElement {
       this.words = this.text.trim() ? parseText(this.text.trim()) : [];
     }
     this.index = 0;
+    this.totalSentences = this.words.filter(t => t.sentenceEnd).length;
+    this.sentenceIndex = this.totalSentences > 0 ? 1 : 0;
   }
 
   private _startTimer() {
@@ -514,6 +537,20 @@ export class RsvpPlayer extends LitElement {
     }
   }
 
+  private _updateSentenceIndex() {
+    if (this.totalSentences === 0) {
+      this.sentenceIndex = 0;
+      return;
+    }
+    let count = 0;
+    for (let i = 0; i < this.index && i < this.words.length; i++) {
+      if (this.words[i].sentenceEnd) {
+        count++;
+      }
+    }
+    this.sentenceIndex = Math.min(count + 1, this.totalSentences);
+  }
+
   private _nextWord() {
     const token = this.words[this.index];
     if (token && token.extraPause > 0) {
@@ -523,6 +560,7 @@ export class RsvpPlayer extends LitElement {
 
     if (this.index < this.words.length - 1) {
       this.index++;
+      this._updateSentenceIndex();
     } else {
       this.playing = false;
       this._clearTimer();
