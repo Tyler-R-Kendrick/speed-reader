@@ -131,6 +131,7 @@ export class RsvpPlayer extends LitElement {
       justify-content: center;
       position: relative;
       font-size: var(--auto-font-size, 3rem);
+      min-height: calc(var(--auto-font-size, 3rem) * 1.2);
     }
 
     .punctuation {
@@ -419,28 +420,61 @@ export class RsvpPlayer extends LitElement {
     this._updateSentenceIndex();
   }
 
-  private _updateFontSize() {
-    const rect = this.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
-      return;
-    }
-    const text = formatToken(this.words[this.index]);
+  private _cachedSentenceStart = -1;
+  private _cachedSentenceEnd = -1;
+  private _cachedFontSize = 0;
+  private _cachedWidth = 0;
+  private _cachedHeight = 0;
+
+  private _measureFontSize(start: number, end: number, rect: DOMRect): number {
     const measure = document.createElement('span');
-    measure.textContent = text;
     measure.style.position = 'absolute';
     measure.style.visibility = 'hidden';
     measure.style.whiteSpace = 'nowrap';
     measure.style.fontWeight = 'bold';
     document.body.append(measure);
-    let fontSize = rect.height * 0.5;
-    measure.style.fontSize = `${fontSize}px`;
+
     const maxWidth = rect.width * 0.9;
-    const width = measure.getBoundingClientRect().width;
-    if (width > maxWidth) {
-      fontSize *= maxWidth / width;
+    let maxSize = 0;
+    for (let i = start; i <= end; i++) {
+      const text = formatToken(this.words[i]);
+      let fontSize = rect.height * 0.5;
+      measure.textContent = text;
+      measure.style.fontSize = `${fontSize}px`;
+      const width = measure.getBoundingClientRect().width;
+      if (width > maxWidth) {
+        fontSize *= maxWidth / width;
+      }
+      if (fontSize > maxSize) {
+        maxSize = fontSize;
+      }
     }
     measure.remove();
-    this.style.setProperty('--auto-font-size', `${fontSize}px`);
+    return maxSize;
+  }
+
+  private _updateFontSize() {
+    const rect = this.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
+      return;
+    }
+
+    const { start, end } = this._currentSentenceBounds();
+    const needsUpdate =
+      this._cachedSentenceStart !== start ||
+      this._cachedSentenceEnd !== end ||
+      this._cachedWidth !== rect.width ||
+      this._cachedHeight !== rect.height;
+
+    if (needsUpdate) {
+      this._cachedSentenceStart = start;
+      this._cachedSentenceEnd = end;
+      this._cachedWidth = rect.width;
+      this._cachedHeight = rect.height;
+      this._cachedFontSize = this._measureFontSize(start, end, rect);
+    }
+
+    this.style.setProperty('--auto-font-size', `${this._cachedFontSize}px`);
   }
 
   /** Keyboard shortcuts: Space, Arrows, F */
