@@ -1,6 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { HtmlParser, MarkdownParser, TextParser } from '../parsers/content-parser';
+import {
+  HtmlParser,
+  MarkdownParser,
+  TextParser,
+  DocxParser,
+  OdtParser,
+} from '../parsers/content-parser';
 import { requestSummary, LlmConfig } from '../llm/summary';
 
 const TEXT_CHANGE_EVENT = 'text-change';
@@ -205,7 +211,7 @@ export class RsvpSettings extends LitElement {
         this.url.toLowerCase().endsWith('.md') ||
         this.url.toLowerCase().endsWith('.markdown');
       const parser = isMarkdown ? new MarkdownParser() : new HtmlParser();
-      const parsed = parser.parse(text);
+      const parsed = await parser.parse(text);
       const processed = await this._maybeSummarize(parsed);
       this.dispatchEvent(
         new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
@@ -221,31 +227,54 @@ export class RsvpSettings extends LitElement {
     if (!file) return;
     const ext = file.name.split('.').pop()?.toLowerCase();
     const type = file.type;
-    const isHtml =
-      type.includes('html') || ext === 'html' || ext === 'htm';
-    const isMarkdown = type.includes('markdown') || ext === 'md' || ext === 'markdown';
-    let parser: HtmlParser | MarkdownParser | TextParser;
+    const isHtml = type.includes('html') || ext === 'html' || ext === 'htm';
+    const isMarkdown =
+      type.includes('markdown') || ext === 'md' || ext === 'markdown';
+    const isDocx =
+      type.includes('officedocument.wordprocessingml') || ext === 'docx';
+    const isOdt =
+      type.includes('opendocument.text') || ext === 'odt';
+    let parser:
+      | HtmlParser
+      | MarkdownParser
+      | TextParser
+      | DocxParser
+      | OdtParser;
+    const readAsBuffer = isDocx || isOdt;
     if (isHtml) {
       parser = new HtmlParser();
     } else if (isMarkdown) {
       parser = new MarkdownParser();
+    } else if (isDocx) {
+      parser = new DocxParser();
+    } else if (isOdt) {
+      parser = new OdtParser();
     } else {
       parser = new TextParser();
     }
     const reader = new FileReader();
     reader.addEventListener('load', () => {
-      const content = (reader.result as string) ?? '';
-      const parsed = parser.parse(content);
-      this._maybeSummarize(parsed).then(processed => {
-        this.text = processed;
-        this.dispatchEvent(
-          new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
-        );
-      });
-      input.value = '';
+      const content = reader.result as string | ArrayBuffer;
+      parser
+        .parse(content)
+        .then(parsed => this._maybeSummarize(parsed))
+        .then(processed => {
+          this.text = processed;
+          this.dispatchEvent(
+            new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
+          );
+        })
+        .finally(() => {
+          input.value = '';
+        });
     });
-    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
-    reader.readAsText(file);
+    if (readAsBuffer) {
+      // eslint-disable-next-line unicorn/prefer-blob-reading-methods
+      reader.readAsArrayBuffer(file);
+    } else {
+      // eslint-disable-next-line unicorn/prefer-blob-reading-methods
+      reader.readAsText(file);
+    }
   }
 
   private _onKeybindingInput(action: keyof Keybindings, e: Event) {
@@ -392,7 +421,7 @@ export class RsvpSettings extends LitElement {
               <input
                 id="file-input"
                 type="file"
-                accept=".txt,.html,text/plain,text/html"
+                accept=".txt,.html,.md,.markdown,.docx,.odt,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text"
                 @change=${this._onFileChange}
               ></label>
           </div>

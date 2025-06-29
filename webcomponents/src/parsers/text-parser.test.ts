@@ -1,8 +1,8 @@
 import { TextParser } from './content-parser';
 
 describe('TextParser', () => {
-  it('returns the text unchanged', () => {
+  it('returns the text unchanged', async () => {
     const parser = new TextParser();
-    expect(parser.parse('Hello world')).toBe('Hello world');
+    await expect(parser.parse('Hello world')).resolves.toBe('Hello world');
   });
 });
