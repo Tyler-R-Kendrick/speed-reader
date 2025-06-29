@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { HtmlParser, MarkdownParser, TextParser } from '../parsers/content-parser';
+import { HtmlParser, MarkdownParser, TextParser, PdfParser } from '../parsers/content-parser';
 import { requestSummary, LlmConfig } from '../llm/summary';
 
 const TEXT_CHANGE_EVENT = 'text-change';
@@ -198,14 +198,19 @@ export class RsvpSettings extends LitElement {
     if (!this.url) return;
     try {
       const res = await fetch(this.url);
-      const text = await res.text();
       const ct = res.headers?.get('content-type') ?? '';
       const isMarkdown =
         ct.includes('markdown') ||
         this.url.toLowerCase().endsWith('.md') ||
         this.url.toLowerCase().endsWith('.markdown');
-      const parser = isMarkdown ? new MarkdownParser() : new HtmlParser();
-      const parsed = parser.parse(text);
+      const isPdf = ct.includes('pdf') || this.url.toLowerCase().endsWith('.pdf');
+      const parser = isPdf
+        ? new PdfParser()
+        : isMarkdown
+          ? new MarkdownParser()
+          : new HtmlParser();
+      const data = isPdf ? await res.arrayBuffer() : await res.text();
+      const parsed = await parser.parse(data);
       const processed = await this._maybeSummarize(parsed);
       this.dispatchEvent(
         new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed })
@@ -221,21 +226,23 @@ export class RsvpSettings extends LitElement {
     if (!file) return;
     const ext = file.name.split('.').pop()?.toLowerCase();
     const type = file.type;
-    const isHtml =
-      type.includes('html') || ext === 'html' || ext === 'htm';
+    const isHtml = type.includes('html') || ext === 'html' || ext === 'htm';
     const isMarkdown = type.includes('markdown') || ext === 'md' || ext === 'markdown';
-    let parser: HtmlParser | MarkdownParser | TextParser;
+    const isPdf = type.includes('pdf') || ext === 'pdf';
+    let parser: HtmlParser | MarkdownParser | TextParser | PdfParser;
     if (isHtml) {
       parser = new HtmlParser();
     } else if (isMarkdown) {
       parser = new MarkdownParser();
+    } else if (isPdf) {
+      parser = new PdfParser();
     } else {
       parser = new TextParser();
     }
     const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      const content = (reader.result as string) ?? '';
-      const parsed = parser.parse(content);
+    reader.addEventListener('load', async () => {
+      const content = (reader.result as ArrayBuffer | string) ?? '';
+      const parsed = await parser.parse(content);
       this._maybeSummarize(parsed).then(processed => {
         this.text = processed;
         this.dispatchEvent(
@@ -245,7 +252,11 @@ export class RsvpSettings extends LitElement {
       input.value = '';
     });
     // eslint-disable-next-line unicorn/prefer-blob-reading-methods
-    reader.readAsText(file);
+    if (isPdf) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
   }
 
   private _onKeybindingInput(action: keyof Keybindings, e: Event) {
@@ -392,7 +403,7 @@ export class RsvpSettings extends LitElement {
               <input
                 id="file-input"
                 type="file"
-                accept=".txt,.html,text/plain,text/html"
+                accept=".txt,.html,.pdf,text/plain,text/html,application/pdf"
                 @change=${this._onFileChange}
               ></label>
           </div>
