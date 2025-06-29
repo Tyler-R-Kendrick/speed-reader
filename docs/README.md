@@ -26,7 +26,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - Settings pane for text input, URL loading and font size
 - Fullscreen toggle
 - Configurable keybindings and gestures ([defaults](features/default_keybindings.md))
-- Modular content parsers with HTML and text implementations
+- Modular content parsers with HTML, Markdown and PDF implementations
 
 ## 4. Planned Features
 1. **Configurable Control** ([feature](features/configurable_control.feature))

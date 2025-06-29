@@ -1,17 +1,18 @@
 export interface ContentParser {
-  parse(content: string): string;
+  parse(content: string | ArrayBuffer): Promise<string>;
 }
 
 /**
  * Pass-through parser for plain text input.
  */
 export class TextParser implements ContentParser {
-  parse(content: string): string {
+  async parse(content: string): Promise<string> {
     return content;
   }
 }
 
 import { marked } from 'marked';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 /**
  * Parse markdown by converting it to HTML and then extracting text using the
@@ -20,7 +21,7 @@ import { marked } from 'marked';
 export class MarkdownParser implements ContentParser {
   private _htmlParser = new HtmlParser();
 
-  parse(content: string): string {
+  async parse(content: string): Promise<string> {
     const html = marked.parse(content);
     return this._htmlParser.parse(html);
   }
@@ -32,7 +33,7 @@ export class MarkdownParser implements ContentParser {
  * text from the <article> element if present, falling back to <body>.
  */
 export class HtmlParser implements ContentParser {
-  parse(content: string): string {
+  async parse(content: string): Promise<string> {
     const doc = new DOMParser().parseFromString(content, 'text/html');
 
     for (const el of doc.querySelectorAll('script,style,noscript,template,head')) {
@@ -55,6 +56,29 @@ export class HtmlParser implements ContentParser {
   }
 }
 
+/**
+ * Extract text content from a PDF document using pdfjs.
+ */
+export class PdfParser implements ContentParser {
+  async parse(content: ArrayBuffer | string): Promise<string> {
+    const data = typeof content === 'string'
+      ? new TextEncoder().encode(content)
+      : new Uint8Array(content);
+    const pdf = await getDocument({ data, useWorkerFetch: false }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const txt = await page.getTextContent();
+      for (const item of txt.items) {
+        if ('str' in item) {
+          text += `${(item as { str: string }).str} `;
+        }
+      }
+    }
+    return text.replaceAll(/\s+/g, ' ').trim();
+  }
+}
+
 export function getParser(type: string): ContentParser {
   switch (type) {
     case 'html':
@@ -62,6 +86,8 @@ export function getParser(type: string): ContentParser {
     case 'markdown':
     case 'md':
       return new MarkdownParser();
+    case 'pdf':
+      return new PdfParser();
     case 'text':
       return new TextParser();
     default:
