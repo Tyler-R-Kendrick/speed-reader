@@ -11,6 +11,21 @@ export class TextParser implements ContentParser {
   }
 }
 
+import { marked } from 'marked';
+
+/**
+ * Parse markdown by converting it to HTML and then extracting text using the
+ * existing HtmlParser logic. This keeps behaviour consistent across formats.
+ */
+export class MarkdownParser implements ContentParser {
+  private _htmlParser = new HtmlParser();
+
+  parse(content: string): string {
+    const html = marked.parse(content);
+    return this._htmlParser.parse(html);
+  }
+}
+
 /**
  * Simple HTML parser that extracts visible text content from an HTML document.
  * It removes script, style and other non-content elements before gathering
@@ -44,6 +59,9 @@ export function getParser(type: string): ContentParser {
   switch (type) {
     case 'html':
       return new HtmlParser();
+    case 'markdown':
+    case 'md':
+      return new MarkdownParser();
     case 'text':
       return new TextParser();
     default:
