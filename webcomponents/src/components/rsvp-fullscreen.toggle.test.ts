@@ -3,7 +3,7 @@ import { fireEvent } from '@testing-library/dom';
 import { jest } from '@jest/globals';
 import { RsvpPlayer } from './rsvp-player';
 import './rsvp-controls';
-const FS_SELECTOR = 'button[aria-label="Toggle Fullscreen"]';
+const FS_SELECTOR = 'sp-button[aria-label="Toggle Fullscreen"]';
 const CONTROLS_TAG = 'rsvp-controls';
 
 describe('Fullscreen controls', () => {
@@ -21,7 +21,7 @@ describe('Fullscreen controls', () => {
     await el.updateComplete;
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG) as HTMLElement;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLElement;
     expect(button.querySelector('sp-icon-full-screen')).toBeInTheDocument();
     controls.setAttribute('isfullscreen', 'true');
     (controls as any).isFullscreen = true;
@@ -39,7 +39,7 @@ describe('Fullscreen controls', () => {
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => el });
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG) as HTMLElement;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLElement;
     fireEvent.click(button);
     expect(exit).toHaveBeenCalled();
     expect(request).not.toHaveBeenCalled();
@@ -55,7 +55,7 @@ describe('Fullscreen controls', () => {
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null });
     const controls = el.shadowRoot!.querySelector(CONTROLS_TAG) as HTMLElement;
     await (controls as any).updateComplete;
-    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLButtonElement;
+    const button = controls.shadowRoot!.querySelector(FS_SELECTOR) as HTMLElement;
     fireEvent.click(button);
     expect(request).toHaveBeenCalled();
     expect(exit).not.toHaveBeenCalled();

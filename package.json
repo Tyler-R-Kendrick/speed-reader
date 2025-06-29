@@ -1,8 +1,13 @@
 {
   "private": true,
-  "workspaces": ["webcomponents"],
+  "workspaces": [
+    "webcomponents"
+  ],
   "scripts": {
     "test": "cd webcomponents && npm test && cd ..",
     "lint": "cd webcomponents && npm run lint && cd .."
+  },
+  "dependencies": {
+    "@spectrum-web-components/theme": "^1.7.0"
   }
 }
