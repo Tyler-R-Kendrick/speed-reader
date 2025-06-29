@@ -141,6 +141,12 @@ export class RsvpPlayer extends LitElement {
       font-size: 0.5em;
     }
 
+    .render-area {
+      position: relative;
+      display: inline-block;
+      line-height: 1;
+    }
+
     .sentence-progress {
       position: absolute;
       bottom: 0;
@@ -292,11 +298,13 @@ export class RsvpPlayer extends LitElement {
           @touchend=${this._onTouchEnd}
         >
           ${this.words.length > 0 ? html`
-            <span>${formatToken(this.words[this.index])}</span>
-            ${this.words[this.index].markers.length > 0
-              ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
-              : ''}
-            <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
+            <div class="render-area">
+              <span>${formatToken(this.words[this.index])}</span>
+              ${this.words[this.index].markers.length > 0
+                ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
+                : ''}
+              <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
+            </div>
           ` : 'Loading...'}
         </div>
 
