@@ -33,7 +33,6 @@ interface GestureSettings {
 
 export class RsvpSettings extends LitElement {
   @property({ type: String }) text: string = '';
-  @property({ type: Number }) wordFontSize: number = 3;
   @property({ type: String }) mode: 'paste' | 'url' = 'paste';
   @property({ type: String }) url: string = '';
   @property({ type: Object }) keybindings: Keybindings = {
@@ -166,11 +165,6 @@ export class RsvpSettings extends LitElement {
     this.dispatchEvent(new CustomEvent(TEXT_CHANGE_EVENT, { detail: processed }));
   }
 
-  private _onFontSizeInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    const value = parseFloat(target.value);
-    this.dispatchEvent(new CustomEvent('font-size-change', { detail: value }));
-  }
 
   private async _maybeSummarize(text: string): Promise<string> {
     if (this.useLlmSummary && this.llmConfig.apiKey) {
@@ -425,13 +419,6 @@ export class RsvpSettings extends LitElement {
           </label>
           <label><input id="llm-summary" type="checkbox" .checked=${this.useLlmSummary} ?disabled=${!this.llmConfig.apiKey} @change=${this._onSummaryToggle}> Summarize text before reading</label>
         </fieldset>
-        <div>
-          <label for="font-size-input">Font Size (rem): ${this.wordFontSize}</label>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <input type="range" id="font-size-input" min="1" max="10" step="0.5" .value=${this.wordFontSize.toString()} @input=${this._onFontSizeInput}>
-            <input type="number" id="font-size-number-input" min="1" max="10" step="0.1" .value=${this.wordFontSize.toString()} @input=${this._onFontSizeInput} style="width: 60px;">
-          </div>
-        </div>
         <fieldset>
           <legend>Keyboard Shortcuts</legend>
           <label>Play/Pause
