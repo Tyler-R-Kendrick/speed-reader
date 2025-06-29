@@ -43,7 +43,6 @@ export class RsvpPlayer extends LitElement {
     text: { type: String },
     session: { type: String },
     wpm: { type: Number },
-    wordFontSize: { type: Number }, // Added for word font size configuration
     playing: { type: Boolean },
     words: { type: Array },
     index: { type: Number },
@@ -57,8 +56,6 @@ export class RsvpPlayer extends LitElement {
   @property({ type: String }) session: string = '';
   /** Words per minute speed */
   @property({ type: Number }) wpm!: number;
-  /** Word font size in rem */
-  @property({ type: Number }) wordFontSize: number = 3; // Default font size in rem
 
   /** Playback state */
   @state() private playing: boolean;
@@ -89,6 +86,8 @@ export class RsvpPlayer extends LitElement {
 
   /** Track Y coordinate for swipe gesture */
   private _touchStartY = 0;
+
+  private _resizeObserver?: ResizeObserver;
 
   private timerId?: number;
   private static readonly MIN_WPM = 100;
@@ -131,6 +130,7 @@ export class RsvpPlayer extends LitElement {
       align-items: center;
       justify-content: center;
       position: relative;
+      font-size: var(--auto-font-size, 3rem);
     }
 
     .punctuation {
@@ -274,11 +274,9 @@ export class RsvpPlayer extends LitElement {
       ${this.showSettingsPane ? html`
         <rsvp-settings
           .text=${this.text}
-          .wordFontSize=${this.wordFontSize}
           .keybindings=${this.keybindings}
           .gestures=${this.gestures}
           @text-change=${(e: CustomEvent) => this.text = e.detail}
-          @font-size-change=${(e: CustomEvent) => this.wordFontSize = e.detail}
           @keybindings-change=${(e: CustomEvent<Keybindings>) => this.keybindings = e.detail}
           @gestures-change=${(e: CustomEvent<GestureSettings>) => this.gestures = e.detail}
           @close=${this._toggleSettingsPane}
@@ -287,7 +285,6 @@ export class RsvpPlayer extends LitElement {
         <div
           class="word"
           part="word"
-          style="font-size: ${this.wordFontSize}rem;"
           @click=${this._onAreaClick}
           @touchstart=${this._onTouchStart}
           @touchmove=${this._onTouchMove}
@@ -335,10 +332,6 @@ export class RsvpPlayer extends LitElement {
     this.text = textarea.value;
   }
 
-  private _handleFontSizeInput(e: Event) {
-    const input = e.target as HTMLInputElement;
-    this.wordFontSize = parseFloat(input.value);
-  }
 
   private _onPlayPause() {
     const isEnded = !this.playing && this.words.length > 0 && this.index === this.words.length - 1;
@@ -422,6 +415,30 @@ export class RsvpPlayer extends LitElement {
     this._updateSentenceIndex();
   }
 
+  private _updateFontSize() {
+    const rect = this.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
+      return;
+    }
+    const text = formatToken(this.words[this.index]);
+    const measure = document.createElement('span');
+    measure.textContent = text;
+    measure.style.position = 'absolute';
+    measure.style.visibility = 'hidden';
+    measure.style.whiteSpace = 'nowrap';
+    measure.style.fontWeight = 'bold';
+    document.body.append(measure);
+    let fontSize = rect.height * 0.5;
+    measure.style.fontSize = `${fontSize}px`;
+    const maxWidth = rect.width * 0.9;
+    const width = measure.getBoundingClientRect().width;
+    if (width > maxWidth) {
+      fontSize *= maxWidth / width;
+    }
+    measure.remove();
+    this.style.setProperty('--auto-font-size', `${fontSize}px`);
+  }
+
   /** Keyboard shortcuts: Space, Arrows, F */
   connectedCallback() {
     super.connectedCallback(); // Call super first
@@ -443,6 +460,12 @@ export class RsvpPlayer extends LitElement {
     this.addEventListener('pointerup', this._onSettingsPointerUp);
     this.addEventListener('touchstart', this._onSettingsTouchStart, { passive: false });
     this.addEventListener('touchend', this._onSettingsTouchEnd, { passive: false });
+
+    this._resizeObserver = new ResizeObserver(() => {
+      this._updateFontSize();
+    });
+    this._resizeObserver.observe(this);
+    this._updateFontSize();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -453,6 +476,7 @@ export class RsvpPlayer extends LitElement {
     this.removeEventListener('touchstart', this._onSettingsTouchStart);
     this.removeEventListener('touchend', this._onSettingsTouchEnd);
     this._clearTimer();
+    this._resizeObserver?.disconnect();
   }
 
   protected updated(changed: Map<string, any>) {
@@ -464,6 +488,9 @@ export class RsvpPlayer extends LitElement {
     }
     if (changed.has('wpm') && this.playing) {
       this._startTimer();
+    }
+    if (changed.has('index') || changed.has('text') || changed.has('session')) {
+      this._updateFontSize();
     }
   }
 
@@ -632,10 +659,6 @@ export class RsvpPlayer extends LitElement {
     this.wpm = parseInt(target.value, 10);
   }
 
-  private _onFontSizeInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.wordFontSize = parseFloat(target.value);
-  }
 
   private _onSettingsSave() {
     this.showSettingsPane = false;

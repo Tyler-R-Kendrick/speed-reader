@@ -23,7 +23,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - Lit-based RSVP player with keyboard and touch controls
 - Rewind/fast-forward 5 words
 - Progress bar with seek support
-- Settings pane for text input, URL loading and font size
+- Settings pane for text input and URL loading
 - Fullscreen toggle
 - Configurable keybindings and gestures ([defaults](features/default_keybindings.md))
 - Modular content parsers with HTML and text implementations
@@ -46,7 +46,7 @@ Speed-Reader is a cross-platform reading tool that presents text one word at a t
 - **Performance:** <50 ms latency per word at 800 wpm
 - **Cross-Platform:** Responsive web, browser extensions, offline PWA, future native apps
 - **Offline Support:** PWA must work offline (service worker, IndexedDB)
-- **Accessibility:** WCAG 2.1 AA, adjustable font/contrast, ARIA labels
+- **Accessibility:** WCAG 2.1 AA, dynamic font sizing, adjustable contrast, ARIA labels
 - **Code Quality:** TypeScript, ESLint, Prettier, 90% unit test coverage
 
 ## 6. Architecture & Technology

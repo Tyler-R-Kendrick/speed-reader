@@ -6,7 +6,7 @@
 - Dialog Panel (`.panel`)
 - Tabs (`.tabs`) for Paste and URL modes
 - Text Input Area (`textarea`)
-- Font Size Slider (`input[type=range]`)
+- Dynamic Font Sizing (automatic based on player size)
 - Close Button (`button`)
 
 ## States
