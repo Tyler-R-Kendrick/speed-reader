@@ -3,6 +3,7 @@ export interface Token {
   scopes: string[];
   markers: string[];
   extraPause: number;
+  sentenceEnd?: boolean;
 }
 
 const OPENERS = ['(', '[', '{', '"', "'"] as const;
@@ -23,7 +24,7 @@ export function parseText(text: string): Token[] {
 
   const pushWord = () => {
     if (word) {
-      tokens.push({ text: word, scopes: [...stack], markers: [], extraPause: 0 });
+      tokens.push({ text: word, scopes: [...stack], markers: [], extraPause: 0, sentenceEnd: false });
       sentenceIndices.push(tokens.length - 1);
       word = '';
     }
@@ -104,6 +105,9 @@ export function parseText(text: string): Token[] {
       for (const idx of sentenceIndices) {
         tokens[idx].markers = dedup;
       }
+      if (sentenceIndices.length > 0) {
+        tokens[sentenceIndices.at(-1)!].sentenceEnd = true;
+      }
       sentenceIndices = [];
       i = j;
       continue;
@@ -113,6 +117,9 @@ export function parseText(text: string): Token[] {
     i++;
   }
   pushWord();
+  if (sentenceIndices.length > 0) {
+    tokens[sentenceIndices.at(-1)!].sentenceEnd = true;
+  }
   return tokens;
 }
 /* eslint-enable max-lines-per-function, sonarjs/cognitive-complexity */
