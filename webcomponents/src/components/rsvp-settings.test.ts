@@ -72,19 +72,16 @@ describe('RsvpSettings', () => {
     const input = el.shadowRoot!.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(['<p>Hello File</p>'], 'sample.html', { type: 'text/html' });
 
-    const mockReader: any = {
-      result: '<p>Hello File</p>',
-      addEventListener(_: string, cb: () => void) { cb(); },
-      readAsText() {}
-    };
-    jest.spyOn(window as any, 'FileReader').mockImplementation(() => mockReader);
+    jest.spyOn(window as any, 'FileReader').mockRestore?.();
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
     await el.updateComplete;
     await flush();
+    await flush();
     const textarea = el.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
     expect(textarea.value).toBe('Hello File');
   });
+
 
   it('disables summary toggle without api key', async () => {
     const el = document.querySelector(TAG) as RsvpSettings;
