@@ -136,7 +136,7 @@ export class RsvpPlayer extends LitElement {
 
     .punctuation {
       font-size: 0.5em;
-      margin-top: 0.25em;
+      margin-bottom: 0.25em;
     }
 
     .render-area {
@@ -149,7 +149,7 @@ export class RsvpPlayer extends LitElement {
 
     .sentence-progress {
       height: 2px;
-      background-color: #FF0000;
+      background-color: currentColor;
       width: 100%;
       pointer-events: none;
       margin-top: 0.25em;
@@ -299,15 +299,15 @@ export class RsvpPlayer extends LitElement {
         >
           ${this.words.length > 0 ? html`
             <div class="render-area">
+              ${this.words[this.index].markers.length > 0
+                ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
+                : ''}
               <span>${formatToken(this.words[this.index])}</span>
               <div
                 class="sentence-progress"
                 style="--progress-scale: ${sentenceProgress}; --progress-duration: ${progressDuration}ms;"
                 aria-hidden="true"
               ></div>
-              ${this.words[this.index].markers.length > 0
-                ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
-                : ''}
             </div>
           ` : 'Loading...'}
         </div>
