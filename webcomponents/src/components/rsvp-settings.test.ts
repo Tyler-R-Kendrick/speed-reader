@@ -108,4 +108,27 @@ describe('RsvpSettings', () => {
     await (el as any)._loadUrl();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('emits wpm-change when wpm updated', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const input = el.shadowRoot!.querySelector('#setting-wpm') as HTMLInputElement;
+    const spy = jest.fn();
+    el.addEventListener('wpm-change', spy);
+    input.value = '350';
+    fireEvent.input(input);
+    await el.updateComplete;
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ detail: 350 }));
+  });
+
+  it('allows selecting llm provider', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const select = el.shadowRoot!.querySelector('#llm-provider') as HTMLSelectElement;
+    expect(select.value).toBe('openrouter');
+    select.value = 'openai';
+    fireEvent.change(select);
+    await el.updateComplete;
+    expect(el.llmConfig.provider).toBe('openai');
+  });
 });

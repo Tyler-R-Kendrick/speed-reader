@@ -47,6 +47,7 @@ export class RsvpSettings extends LitElement {
     taps: true,
     settingsSwipe: true,
   };
+  @property({ type: Number }) wpm = 300;
   @property({ type: Object }) llmConfig: LlmConfig = {
     provider: 'openrouter',
     apiKey: '',
@@ -259,6 +260,12 @@ export class RsvpSettings extends LitElement {
     }
   }
 
+  private _onWpmInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.wpm = parseInt(target.value, 10);
+    this.dispatchEvent(new CustomEvent('wpm-change', { detail: this.wpm }));
+  }
+
   private _onKeybindingInput(action: keyof Keybindings, e: Event) {
     const target = e.target as HTMLInputElement;
     const updated = { ...this.keybindings, [action]: target.value };
@@ -410,7 +417,29 @@ export class RsvpSettings extends LitElement {
           </div>
         `}
         <fieldset>
+          <legend>Reading Settings</legend>
+          <label>Words Per Minute
+            <input
+              id="setting-wpm"
+              type="number"
+              min="100"
+              max="800"
+              .value=${String(this.wpm)}
+              @input=${this._onWpmInput}
+            >
+          </label>
+        </fieldset>
+        <fieldset>
           <legend>LLM Summary</legend>
+          <label>Provider
+            <select id="llm-provider" .value=${this.llmConfig.provider} @change=${(e: Event) => {
+              const target = e.target as HTMLSelectElement;
+              this.llmConfig = { ...this.llmConfig, provider: target.value as 'openrouter' | 'openai' };
+            }}>
+              <option value="openrouter">OpenRouter</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </label>
           <label>API Key
             <input id="llm-key" type="password" .value=${this.llmConfig.apiKey} @input=${this._onApiKeyInput}>
           </label>
