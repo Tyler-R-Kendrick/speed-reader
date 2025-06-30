@@ -130,7 +130,8 @@ export class RsvpPlayer extends LitElement {
       align-items: center;
       justify-content: center;
       position: relative;
-      font-size: var(--auto-font-size, 3rem);
+      font-size: var(--rsvp-font-size, 3rem);
+      min-height: calc(var(--rsvp-font-size, 3rem) * 1.2);
     }
 
     .punctuation {
@@ -419,28 +420,59 @@ export class RsvpPlayer extends LitElement {
     this._updateSentenceIndex();
   }
 
-  private _updateFontSize() {
-    const rect = this.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
-      return;
-    }
-    const text = formatToken(this.words[this.index]);
+  private _cachedWidth = 0;
+  private _cachedHeight = 0;
+  private _wordCount = 0;
+  private _fontSize = 0;
+
+  private _measureWordSize(text: string, rect: DOMRect): number {
     const measure = document.createElement('span');
-    measure.textContent = text;
     measure.style.position = 'absolute';
     measure.style.visibility = 'hidden';
     measure.style.whiteSpace = 'nowrap';
     measure.style.fontWeight = 'bold';
     document.body.append(measure);
-    let fontSize = rect.height * 0.5;
-    measure.style.fontSize = `${fontSize}px`;
+
     const maxWidth = rect.width * 0.9;
+    let fontSize = rect.height * 0.8;
+    measure.textContent = text;
+    measure.style.fontSize = `${fontSize}px`;
     const width = measure.getBoundingClientRect().width;
     if (width > maxWidth) {
       fontSize *= maxWidth / width;
     }
     measure.remove();
-    this.style.setProperty('--auto-font-size', `${fontSize}px`);
+    return fontSize;
+  }
+
+  private _computeFontSize(rect: DOMRect): number {
+    let size = rect.height * 0.8;
+    for (const token of this.words) {
+      const text = formatToken(token);
+      const wordSize = this._measureWordSize(text, rect);
+      size = Math.min(size, wordSize);
+    }
+    return size;
+  }
+
+  private _updateFontSize() {
+    const rect = this.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
+      return;
+    }
+
+    const sizeChanged =
+      this._cachedWidth !== rect.width ||
+      this._cachedHeight !== rect.height ||
+      this._wordCount !== this.words.length;
+
+    if (sizeChanged) {
+      this._cachedWidth = rect.width;
+      this._cachedHeight = rect.height;
+      this._wordCount = this.words.length;
+      this._fontSize = this._computeFontSize(rect);
+      this.style.setProperty('--rsvp-font-size', `${this._fontSize}px`);
+    }
   }
 
   /** Keyboard shortcuts: Space, Arrows, F */
@@ -566,6 +598,7 @@ export class RsvpPlayer extends LitElement {
     this.index = 0;
     this.totalSentences = this.words.filter(t => t.sentenceEnd).length;
     this.sentenceIndex = this.totalSentences > 0 ? 1 : 0;
+    this._wordCount = this.words.length;
   }
 
   private _startTimer() {
