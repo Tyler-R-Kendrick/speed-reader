@@ -131,7 +131,7 @@ export class RsvpPlayer extends LitElement {
       justify-content: center;
       position: relative;
       font-size: var(--auto-font-size, 3rem);
-      min-height: calc(var(--auto-font-size, 3rem) * 1.2);
+      min-height: calc(var(--max-font-size, 3rem) * 1.2);
     }
 
     .punctuation {
@@ -425,6 +425,8 @@ export class RsvpPlayer extends LitElement {
   private _cachedFontSize = 0;
   private _cachedWidth = 0;
   private _cachedHeight = 0;
+  private _maxFontSize = 0;
+  private _wordCount = 0;
 
   private _measureFontSize(start: number, end: number, rect: DOMRect): number {
     const measure = document.createElement('span');
@@ -453,6 +455,11 @@ export class RsvpPlayer extends LitElement {
     return maxSize;
   }
 
+  private _updateMaxFontSize(rect: DOMRect) {
+    this._maxFontSize = this._measureFontSize(0, this.words.length - 1, rect);
+    this.style.setProperty('--max-font-size', `${this._maxFontSize}px`);
+  }
+
   private _updateFontSize() {
     const rect = this.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0 || this.words.length === 0) {
@@ -460,18 +467,28 @@ export class RsvpPlayer extends LitElement {
     }
 
     const { start, end } = this._currentSentenceBounds();
-    const needsUpdate =
-      this._cachedSentenceStart !== start ||
-      this._cachedSentenceEnd !== end ||
+    const sizeChanged =
       this._cachedWidth !== rect.width ||
-      this._cachedHeight !== rect.height;
+      this._cachedHeight !== rect.height ||
+      this._wordCount !== this.words.length;
 
-    if (needsUpdate) {
-      this._cachedSentenceStart = start;
-      this._cachedSentenceEnd = end;
+    if (sizeChanged) {
       this._cachedWidth = rect.width;
       this._cachedHeight = rect.height;
-      this._cachedFontSize = this._measureFontSize(start, end, rect);
+      this._wordCount = this.words.length;
+      this._updateMaxFontSize(rect);
+    }
+
+    const needsSentenceUpdate =
+      this._cachedSentenceStart !== start ||
+      this._cachedSentenceEnd !== end ||
+      sizeChanged;
+
+    if (needsSentenceUpdate) {
+      this._cachedSentenceStart = start;
+      this._cachedSentenceEnd = end;
+      const sentenceSize = this._measureFontSize(start, end, rect);
+      this._cachedFontSize = Math.min(sentenceSize, this._maxFontSize);
     }
 
     this.style.setProperty('--auto-font-size', `${this._cachedFontSize}px`);
@@ -600,6 +617,7 @@ export class RsvpPlayer extends LitElement {
     this.index = 0;
     this.totalSentences = this.words.filter(t => t.sentenceEnd).length;
     this.sentenceIndex = this.totalSentences > 0 ? 1 : 0;
+    this._wordCount = this.words.length;
   }
 
   private _startTimer() {
