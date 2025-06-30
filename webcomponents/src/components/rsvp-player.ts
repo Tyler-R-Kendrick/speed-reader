@@ -144,6 +144,7 @@ export class RsvpPlayer extends LitElement {
       flex-direction: column;
       align-items: center;
       line-height: 1;
+      width: 100%;
     }
 
     .sentence-progress {
