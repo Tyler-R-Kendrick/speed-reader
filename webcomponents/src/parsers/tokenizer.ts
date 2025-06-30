@@ -81,11 +81,21 @@ export function parseText(text: string): Token[] {
         const last = tokens.at(-1)!;
         last.extraPause += 1;
       }
+      if (ch === ';') {
+        const dedup = [';'];
+        for (const idx of sentenceIndices) {
+          tokens[idx].markers = dedup;
+        }
+        if (sentenceIndices.length > 0) {
+          tokens[sentenceIndices.at(-1)!].sentenceEnd = true;
+        }
+        sentenceIndices = [];
+      }
       i++;
       continue;
     }
 
-    if (ch === '.' || ch === '!' || ch === '?') {
+    if (ch === '.' || ch === '!' || ch === '?' ) {
       pushWord();
       let j = i;
       const markers: string[] = [];
@@ -94,16 +104,17 @@ export function parseText(text: string): Token[] {
           break;
         }
         const c = text[j];
-        if (c === '!' || c === '?') {
+        if (c === '!' || c === '?' || c === '.' ) {
           markers.push(c);
-        } else if (c !== '.') {
+        } else {
           break;
         }
         j++;
       }
       const dedup = [...new Set(markers)];
+      const finalMarkers = dedup.length > 0 ? dedup : [' '];
       for (const idx of sentenceIndices) {
-        tokens[idx].markers = dedup;
+        tokens[idx].markers = finalMarkers;
       }
       if (sentenceIndices.length > 0) {
         tokens[sentenceIndices.at(-1)!].sentenceEnd = true;
@@ -118,6 +129,9 @@ export function parseText(text: string): Token[] {
   }
   pushWord();
   if (sentenceIndices.length > 0) {
+    for (const idx of sentenceIndices) {
+      tokens[idx].markers = [' '];
+    }
     tokens[sentenceIndices.at(-1)!].sentenceEnd = true;
   }
   return tokens;

@@ -13,9 +13,20 @@ describe('parseText punctuation rules', () => {
     expect(tokens[0].markers.sort()).toEqual(['!', '?']);
   });
 
+  it('assigns period marker to sentence words', () => {
+    const tokens = parseText('Hello.');
+    expect(tokens[0].markers).toEqual(['.']);
+  });
+
   it('creates incremental ellipsis tokens', () => {
     const tokens = parseText('Wait...');
     expect(tokens.map(t => t.text)).toEqual(['Wait', '.', '..', '...']);
+  });
+
+  it('uses blank marker when sentence lacks punctuation', () => {
+    const tokens = parseText('No marker');
+    expect(tokens[0].markers).toEqual([' ']);
+    expect(tokens[1].markers).toEqual([' ']);
   });
 
   it('adds pause after comma', () => {
@@ -34,5 +45,6 @@ describe('parseText punctuation rules', () => {
     const tokens = parseText('First; second');
     expect(tokens.map(t => t.text)).toEqual(['First', 'second']);
     expect(tokens[0].extraPause).toBe(1);
+    expect(tokens[0].markers).toEqual([';']);
   });
 });

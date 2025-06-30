@@ -6,15 +6,18 @@ The RSVP player handles punctuation to preserve reading rhythm while signalling 
   - A sentence ending with `?` displays a question mark below every word in that sentence.
   - A sentence ending with `!` shows an exclamation mark below every word.
   - If a sentence ends with both (`?!` or `!?`), both symbols appear beneath each word.
+  - A sentence ending with `.` shows a period below every word.
+  - A sentence ending with `;` shows a semicolon marker and then starts a new sentence.
 - **Ellipses**
   - An ellipsis (`...`) is rendered as a sequence of three words: `.` then `..` then `...`.
   - Each period remains onscreen until the full ellipsis is shown, using the current WPM delay for each step.
 - **Commas**
   - Commas do not appear onscreen but cause the preceding word to stay for one extra delay interval.
 - **Colons & Semicolons**
-  - `:` and `;` are treated like commas. They are hidden and add one extra delay to the word before them.
+  - `:` is treated like a comma and adds one extra delay to the word before it.
 - **Periods**
-  - A period that ends a sentence does not display and has no extra delay.
+  - Periods ending a sentence are displayed as markers with no extra delay.
+  - Sentences without an ending marker use a blank space so the marker row stays aligned.
 - **Default**
   - Any other punctuation characters remain as part of the word and do not alter timing.
 
