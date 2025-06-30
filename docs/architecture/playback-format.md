@@ -17,7 +17,7 @@ The format is designed to capture all timing and punctuation information while r
 ```
 
 - **tokens[]** – words in playback order.
-- **markers** – sentence level punctuation such as `?` or `!` applied to all words in the sentence.
+- **markers** – sentence level punctuation such as `.`, `?`, `!` or `;` applied to all words in the sentence. If a sentence lacks punctuation, a single space character is used.
 - **text** – literal word to display.
 - **scopes** – array of opening punctuation currently in scope. The player renders matching closing characters after the word.
 - **delay** – additional display intervals beyond the base WPM rate.
