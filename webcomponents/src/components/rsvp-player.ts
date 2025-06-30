@@ -130,8 +130,8 @@ export class RsvpPlayer extends LitElement {
       align-items: center;
       justify-content: center;
       position: relative;
-      font-size: var(--auto-font-size, 3rem);
-      min-height: calc(var(--max-font-size, 3rem) * 1.2);
+      font-size: var(--rsvp-font-size, 3rem);
+      min-height: calc(var(--rsvp-font-size, 3rem) * 1.2);
     }
 
     .punctuation {
@@ -420,15 +420,12 @@ export class RsvpPlayer extends LitElement {
     this._updateSentenceIndex();
   }
 
-  private _cachedSentenceStart = -1;
-  private _cachedSentenceEnd = -1;
-  private _cachedFontSize = 0;
   private _cachedWidth = 0;
   private _cachedHeight = 0;
-  private _maxFontSize = 0;
   private _wordCount = 0;
+  private _fontSize = 0;
 
-  private _measureFontSize(start: number, end: number, rect: DOMRect): number {
+  private _measureWordSize(text: string, rect: DOMRect): number {
     const measure = document.createElement('span');
     measure.style.position = 'absolute';
     measure.style.visibility = 'hidden';
@@ -437,27 +434,25 @@ export class RsvpPlayer extends LitElement {
     document.body.append(measure);
 
     const maxWidth = rect.width * 0.9;
-    let maxSize = 0;
-    for (let i = start; i <= end; i++) {
-      const text = formatToken(this.words[i]);
-      let fontSize = rect.height * 0.5;
-      measure.textContent = text;
-      measure.style.fontSize = `${fontSize}px`;
-      const width = measure.getBoundingClientRect().width;
-      if (width > maxWidth) {
-        fontSize *= maxWidth / width;
-      }
-      if (fontSize > maxSize) {
-        maxSize = fontSize;
-      }
+    let fontSize = rect.height * 0.8;
+    measure.textContent = text;
+    measure.style.fontSize = `${fontSize}px`;
+    const width = measure.getBoundingClientRect().width;
+    if (width > maxWidth) {
+      fontSize *= maxWidth / width;
     }
     measure.remove();
-    return maxSize;
+    return fontSize;
   }
 
-  private _updateMaxFontSize(rect: DOMRect) {
-    this._maxFontSize = this._measureFontSize(0, this.words.length - 1, rect);
-    this.style.setProperty('--max-font-size', `${this._maxFontSize}px`);
+  private _computeFontSize(rect: DOMRect): number {
+    let size = rect.height * 0.8;
+    for (const token of this.words) {
+      const text = formatToken(token);
+      const wordSize = this._measureWordSize(text, rect);
+      size = Math.min(size, wordSize);
+    }
+    return size;
   }
 
   private _updateFontSize() {
@@ -466,7 +461,6 @@ export class RsvpPlayer extends LitElement {
       return;
     }
 
-    const { start, end } = this._currentSentenceBounds();
     const sizeChanged =
       this._cachedWidth !== rect.width ||
       this._cachedHeight !== rect.height ||
@@ -476,22 +470,9 @@ export class RsvpPlayer extends LitElement {
       this._cachedWidth = rect.width;
       this._cachedHeight = rect.height;
       this._wordCount = this.words.length;
-      this._updateMaxFontSize(rect);
+      this._fontSize = this._computeFontSize(rect);
+      this.style.setProperty('--rsvp-font-size', `${this._fontSize}px`);
     }
-
-    const needsSentenceUpdate =
-      this._cachedSentenceStart !== start ||
-      this._cachedSentenceEnd !== end ||
-      sizeChanged;
-
-    if (needsSentenceUpdate) {
-      this._cachedSentenceStart = start;
-      this._cachedSentenceEnd = end;
-      const sentenceSize = this._measureFontSize(start, end, rect);
-      this._cachedFontSize = Math.min(sentenceSize, this._maxFontSize);
-    }
-
-    this.style.setProperty('--auto-font-size', `${this._cachedFontSize}px`);
   }
 
   /** Keyboard shortcuts: Space, Arrows, F */

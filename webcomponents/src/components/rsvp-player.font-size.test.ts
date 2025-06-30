@@ -14,7 +14,7 @@ describe('RsvpPlayer font sizing', () => {
     document.body.innerHTML = `<${TAG}></${TAG}>`;
   });
 
-  it('sets max font size css variable', async () => {
+  it('sets constant font size based on longest word', async () => {
     const el = document.querySelector<RsvpPlayer>(TAG)!;
     el.session = serializeSession(parseText('longword ... short'));
     (el as any).getBoundingClientRect = () => ({
@@ -32,8 +32,8 @@ describe('RsvpPlayer font sizing', () => {
     });
     await el.updateComplete;
     (el as any)._updateFontSize();
-    const maxVar = el.style.getPropertyValue('--max-font-size');
-    expect(maxVar).not.toBe('');
+    const sizeVar = el.style.getPropertyValue('--rsvp-font-size');
+    expect(sizeVar).not.toBe('');
     const word = el.shadowRoot!.querySelector('.word') as HTMLElement;
     const style = getComputedStyle(word);
     expect(style.minHeight).not.toBe('0px');
