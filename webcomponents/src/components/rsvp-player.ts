@@ -152,7 +152,9 @@ export class RsvpPlayer extends LitElement {
       width: 100%;
       pointer-events: none;
       margin-top: 0.25em;
-      transition: width 0.1s linear;
+      transform-origin: center;
+      transform: scaleX(var(--progress-scale, 1));
+      transition: transform var(--progress-duration, 0ms) linear;
     }
 
     .controls {
@@ -271,7 +273,8 @@ export class RsvpPlayer extends LitElement {
     // Replay logic might need to be passed or handled differently if rsvp-controls doesn't support it directly.
 
     const progressPercent = this.words.length > 0 ? ((this.index + 1) / this.words.length) * 100 : 0;
-    const sentenceProgressPercent = this._sentenceProgress();
+    const sentenceProgress = this._sentenceProgress();
+    const progressDuration = this.playing ? 60000 / this.wpm : 0;
 
     return html`
       ${this.showSettingsPane ? html`
@@ -296,7 +299,11 @@ export class RsvpPlayer extends LitElement {
           ${this.words.length > 0 ? html`
             <div class="render-area">
               <span>${formatToken(this.words[this.index])}</span>
-              <div class="sentence-progress" style="width: ${sentenceProgressPercent}%;" aria-hidden="true"></div>
+              <div
+                class="sentence-progress"
+                style="--progress-scale: ${sentenceProgress}; --progress-duration: ${progressDuration}ms;"
+                aria-hidden="true"
+              ></div>
               ${this.words[this.index].markers.length > 0
                 ? html`<span class="punctuation">${this.words[this.index].markers.join('')}</span>`
                 : ''}
@@ -643,7 +650,7 @@ export class RsvpPlayer extends LitElement {
     if (total <= 0) {
       return 0;
     }
-    return ((total - (this.index - start)) / total) * 100;
+    return (total - (this.index - start)) / total;
   }
 
   private _updateSentenceIndex() {
