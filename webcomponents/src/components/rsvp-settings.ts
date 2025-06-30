@@ -3,10 +3,13 @@ import { property } from 'lit/decorators.js';
 import '@spectrum-web-components/accordion/sp-accordion.js';
 import '@spectrum-web-components/accordion/sp-accordion-item.js';
 import '@spectrum-web-components/button/sp-close-button.js';
+import '@spectrum-web-components/button/sp-button.js';
 import '@spectrum-web-components/tabs/sp-tabs.js';
 import '@spectrum-web-components/tabs/sp-tab.js';
 import '@spectrum-web-components/textfield/sp-textfield.js';
 import '@spectrum-web-components/field-label/sp-field-label.js';
+import '@spectrum-web-components/theme/sp-theme.js';
+import '@spectrum-web-components/dialog/sp-dialog.js';
 import {
   HtmlParser,
   MarkdownParser,
@@ -58,17 +61,25 @@ export class RsvpSettings extends LitElement {
 
   static styles = css`
     :host {
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
-      z-index: 10;
-      overflow-y: auto;
+      display: grid;
+      place-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
       overscroll-behavior: contain;
+      z-index: 1000;
+    }
+
+    .panel {
+      width: 90vw;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background-color: var(--spectrum-global-color-gray-50);
+      color: var(--spectrum-alias-text-color);
+      border-radius: var(--spectrum-alias-border-radius-medium);
+      padding: var(--spectrum-global-dimension-size-200);
+      box-shadow: var(--spectrum-global-shadow-medium);
       transform: translateY(100%);
       animation: slide-up 0.3s ease-out forwards;
     }
@@ -83,80 +94,21 @@ export class RsvpSettings extends LitElement {
     }
 
     @media (max-width: 600px) {
-      :host {
-        padding: 10px;
+      .panel {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        border-radius: 0;
       }
     }
 
-    .dialog {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      color: #FFFFFF;
-    }
-
-    .dialog label {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .dialog textarea,
-    .dialog input[type="number"],
-    .dialog input[type="range"],
-    .dialog input[type="url"] {
-      width: 100%;
-      padding: var(--sr-spacing-sm, 8px);
-      border-radius: var(--sr-radius-md, 4px);
-      border: 1px solid #555;
-      background-color: #333;
-      color: #FFFFFF;
-      box-sizing: border-box;
-    }
-    .dialog textarea {
-      min-height: 40vh;
-      max-height: 60vh;
-      resize: vertical;
-    }
-    @media (max-width: 600px) {
-      .dialog textarea {
-        min-height: 30vh;
-      }
-    }
-
-    .dialog sp-button,
-    .dialog button {
-      background-color: #FF0000;
-      color: #FFFFFF;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    .dialog sp-button:hover,
-    .dialog button:hover {
-      background-color: #CC0000;
-    }
-
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: transparent;
-      border: none;
-      color: #FFFFFF;
-      font-size: 24px;
-      cursor: pointer;
+    .close-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background-color 0.2s, color 0.2s;
+      justify-content: flex-end;
     }
-    .close-button:hover {
-      background-color: #FFFFFF;
-      color: #000000;
+
+    sp-accordion {
+      margin-top: var(--spectrum-global-dimension-size-200);
     }
   `;
 
@@ -297,7 +249,9 @@ export class RsvpSettings extends LitElement {
   }
 
   private _onClose() {
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(
+      new CustomEvent('close', { bubbles: true, composed: true })
+    );
   }
 
   private _touchStartY = 0;
@@ -383,14 +337,17 @@ export class RsvpSettings extends LitElement {
   render() {
     const pasteActive = this.mode === 'paste';
     return html`
-      <div class="dialog" role="dialog" aria-label="Settings">
-        <sp-close-button class="close-button" @click=${this._onClose} quiet></sp-close-button>
-        <sp-accordion allow-multiple>
-          <sp-accordion-item label="Content" open>
-            <sp-tabs
-              selected=${pasteActive ? 'paste' : 'url'}
-              @change=${(e: Event) => { this.mode = (e.target as any).selected as 'paste' | 'url'; }}>
-              <sp-tab value="paste">Paste Text</sp-tab>
+      <sp-theme color="dark" scale="medium">
+        <div class="panel" role="dialog" aria-label="Settings">
+          <div class="close-row">
+            <sp-close-button class="close-button" @click=${this._onClose} quiet></sp-close-button>
+          </div>
+          <sp-accordion allow-multiple>
+            <sp-accordion-item label="Content" open>
+              <sp-tabs
+                selected=${pasteActive ? 'paste' : 'url'}
+                @change=${(e: Event) => { this.mode = (e.target as any).selected as 'paste' | 'url'; }}>
+                <sp-tab value="paste">Paste Text</sp-tab>
               <sp-tab value="url">From URL</sp-tab>
             </sp-tabs>
             ${pasteActive ? html`
@@ -416,7 +373,7 @@ export class RsvpSettings extends LitElement {
               <div>
                 <sp-field-label for="url-input">URL to Load:</sp-field-label>
                 <sp-textfield id="url-input" type="url" .value=${this.url} @input=${this._onUrlInput}></sp-textfield>
-                <button class="load-url" @click=${this._loadUrl}>Load Content</button>
+                <sp-button class="load-url" variant="primary" @click=${this._loadUrl}>Load Content</sp-button>
               </div>
             `}
           </sp-accordion-item>
@@ -472,8 +429,9 @@ export class RsvpSettings extends LitElement {
             <label><input type="checkbox" .checked=${this.gestures.taps} @change=${(e: Event) => this._onGestureToggle('taps', e)}> Tap Controls</label>
             <label><input type="checkbox" .checked=${this.gestures.settingsSwipe} @change=${(e: Event) => this._onGestureToggle('settingsSwipe', e)}> Swipe Settings</label>
           </sp-accordion-item>
-        </sp-accordion>
-      </div>
+          </sp-accordion>
+        </div>
+      </sp-theme>
     `;
   }
 }

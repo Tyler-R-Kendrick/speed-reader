@@ -2,8 +2,8 @@
 
 ## Anatomy
 - Root (`<sr-settings-dialog>`)
-- Dialog Overlay (`.overlay`)
-- Dialog Panel (`.panel`)
+- Theme Wrapper (`<sp-theme>`) providing Spectrum color and scale
+- Dialog Panel (`.panel` in `<sp-dialog>`)
 - Spectrum Accordion groups (`<sp-accordion>`)
 - Tabs (`<sp-tabs>`) for Paste and URL modes
 - Text Input Area (`<sp-textfield multiline>`)
