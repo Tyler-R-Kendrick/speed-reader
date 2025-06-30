@@ -152,7 +152,7 @@ export class RsvpPlayer extends LitElement {
       width: 100%;
       pointer-events: none;
       margin-top: 0.25em;
-      transform-origin: left;
+      transform-origin: center;
       transform: scaleX(var(--progress-scale, 1));
       transition: transform var(--progress-duration, 0ms) linear;
     }
