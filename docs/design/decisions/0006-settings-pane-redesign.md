@@ -14,4 +14,4 @@ We evaluated new layouts for the settings pane following the Adobe Spectrum desi
    - *Pros:* very simple implementation.
    - *Cons:* overwhelming on small screens, harder to find specific options.
 
-Option 2 provides the best balance of discoverability and minimal cognitive load. It keeps related settings together while allowing users to collapse groups they rarely change. The accordion layout is therefore chosen for implementation.
+Option 2 provides the best balance of discoverability and minimal cognitive load. It keeps related settings together while allowing users to collapse groups they rarely change. The accordion layout is therefore chosen for implementation and implemented with Spectrum `<sp-accordion>` components to align with the design system.

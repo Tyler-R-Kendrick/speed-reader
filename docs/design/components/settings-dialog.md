@@ -4,10 +4,11 @@
 - Root (`<sr-settings-dialog>`)
 - Dialog Overlay (`.overlay`)
 - Dialog Panel (`.panel`)
-- Tabs (`.tabs`) for Paste and URL modes
-- Text Input Area (`textarea`)
+- Spectrum Accordion groups (`<sp-accordion>`)
+- Tabs (`<sp-tabs>`) for Paste and URL modes
+- Text Input Area (`<sp-textfield multiline>`)
 - Dynamic Font Sizing (automatic based on player size)
-- Close Button (`button`)
+- Close Button (`<sp-close-button>`)
 
 ## States
 - Open / Closed
@@ -27,6 +28,7 @@
 - Keyboard: Tab navigation, Esc (close)
 - Focus trap: Tokenized focus ring
 - Touch: swipe down to close on mobile
+- Groups are organized in an accordion to reduce scrolling on mobile.
 
 ## Configurable Fields
 

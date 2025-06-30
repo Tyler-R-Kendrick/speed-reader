@@ -1,6 +1,8 @@
 Feature: Settings Pane
   The reader offers configurable settings to accommodate different workflows.
 
+  The pane groups related options in an accordion to reduce scrolling.
+
   Scenario: Adjusting reading preferences
     When I set "Words Per Minute" to 350
     Then the player starts new sessions at 350 WPM
