@@ -281,9 +281,11 @@ export class RsvpPlayer extends LitElement {
       ${this.showSettingsPane ? html`
         <rsvp-settings
           .text=${this.text}
+          .wpm=${this.wpm}
           .keybindings=${this.keybindings}
           .gestures=${this.gestures}
           @text-change=${(e: CustomEvent) => this.text = e.detail}
+          @wpm-change=${(e: CustomEvent<number>) => this.wpm = e.detail}
           @keybindings-change=${(e: CustomEvent<Keybindings>) => this.keybindings = e.detail}
           @gestures-change=${(e: CustomEvent<GestureSettings>) => this.gestures = e.detail}
           @close=${this._toggleSettingsPane}

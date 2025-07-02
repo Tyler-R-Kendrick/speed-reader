@@ -1,11 +1,15 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import '@spectrum-web-components/icons-workflow/icons/sp-icon-close.js';
+import '@spectrum-web-components/accordion/sp-accordion.js';
+import '@spectrum-web-components/accordion/sp-accordion-item.js';
+import '@spectrum-web-components/button/sp-close-button.js';
 import '@spectrum-web-components/button/sp-button.js';
 import '@spectrum-web-components/tabs/sp-tabs.js';
 import '@spectrum-web-components/tabs/sp-tab.js';
 import '@spectrum-web-components/textfield/sp-textfield.js';
 import '@spectrum-web-components/field-label/sp-field-label.js';
+import '@spectrum-web-components/theme/sp-theme.js';
+import '@spectrum-web-components/dialog/sp-dialog.js';
 import {
   HtmlParser,
   MarkdownParser,
@@ -47,6 +51,7 @@ export class RsvpSettings extends LitElement {
     taps: true,
     settingsSwipe: true,
   };
+  @property({ type: Number }) wpm = 300;
   @property({ type: Object }) llmConfig: LlmConfig = {
     provider: 'openrouter',
     apiKey: '',
@@ -56,17 +61,25 @@ export class RsvpSettings extends LitElement {
 
   static styles = css`
     :host {
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
-      z-index: 10;
-      overflow-y: auto;
+      display: grid;
+      place-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
       overscroll-behavior: contain;
+      z-index: 1000;
+    }
+
+    .panel {
+      width: 90vw;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background-color: var(--spectrum-global-color-gray-50);
+      color: var(--spectrum-alias-text-color);
+      border-radius: var(--spectrum-alias-border-radius-medium);
+      padding: var(--spectrum-global-dimension-size-200);
+      box-shadow: var(--spectrum-global-shadow-medium);
       transform: translateY(100%);
       animation: slide-up 0.3s ease-out forwards;
     }
@@ -81,80 +94,21 @@ export class RsvpSettings extends LitElement {
     }
 
     @media (max-width: 600px) {
-      :host {
-        padding: 10px;
+      .panel {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        border-radius: 0;
       }
     }
 
-    .settings-pane div {
-      margin-bottom: 15px;
-      width: 80%;
-      max-width: 400px;
-    }
-
-
-
-    .settings-pane label {
-      display: block;
-      margin-bottom: 5px;
-      color: #FFFFFF;
-    }
-
-    .settings-pane textarea,
-    .settings-pane input[type="number"],
-    .settings-pane input[type="range"],
-    .settings-pane input[type="url"] {
-      width: 100%;
-      padding: var(--sr-spacing-sm, 8px);
-      border-radius: var(--sr-radius-md, 4px);
-      border: 1px solid #555;
-      background-color: #333;
-      color: #FFFFFF;
-      box-sizing: border-box;
-    }
-    .settings-pane textarea {
-      min-height: 40vh;
-      max-height: 60vh;
-      resize: vertical;
-    }
-    @media (max-width: 600px) {
-      .settings-pane textarea {
-        min-height: 30vh;
-      }
-    }
-
-    .settings-pane button {
-      background-color: #FF0000;
-      color: #FFFFFF;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    .settings-pane button:hover {
-      background-color: #CC0000;
-    }
-
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: transparent;
-      border: none;
-      color: #FFFFFF;
-      font-size: 24px;
-      cursor: pointer;
+    .close-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background-color 0.2s, color 0.2s;
+      justify-content: flex-end;
     }
-    .close-button:hover {
-      background-color: #FFFFFF;
-      color: #000000;
+
+    sp-accordion {
+      margin-top: var(--spectrum-global-dimension-size-200);
     }
   `;
 
@@ -259,6 +213,12 @@ export class RsvpSettings extends LitElement {
     }
   }
 
+  private _onWpmInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.wpm = parseInt(target.value, 10);
+    this.dispatchEvent(new CustomEvent('wpm-change', { detail: this.wpm }));
+  }
+
   private _onKeybindingInput(action: keyof Keybindings, e: Event) {
     const target = e.target as HTMLInputElement;
     const updated = { ...this.keybindings, [action]: target.value };
@@ -289,7 +249,9 @@ export class RsvpSettings extends LitElement {
   }
 
   private _onClose() {
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(
+      new CustomEvent('close', { bubbles: true, composed: true })
+    );
   }
 
   private _touchStartY = 0;
@@ -375,75 +337,101 @@ export class RsvpSettings extends LitElement {
   render() {
     const pasteActive = this.mode === 'paste';
     return html`
-      <div class="settings-pane">
-        <sp-button class="close-button" quiet aria-label="Close settings" @click=${this._onClose}>
-          <sp-icon-close></sp-icon-close>
-        </sp-button>
-        <sp-tabs selected=${pasteActive ? 'paste' : 'url'} @change=${(e: Event) => { this.mode = (e.target as any).selected as 'paste' | 'url'; }}>
-          <sp-tab value="paste">Paste Text</sp-tab>
-          <sp-tab value="url">From URL</sp-tab>
-        </sp-tabs>
-        ${pasteActive ? html`
-          <div>
-            <sp-field-label for="text-input">Text to Display:</sp-field-label>
-            <sp-textfield
-              multiline
-              id="text-input"
-              .value=${this.text}
-              @input=${this._onTextInput}
-              ?readonly=${this.mode === 'url'}
-              aria-readonly=${this.mode === 'url'}
-            ></sp-textfield>
-            <sp-field-label for="file-input">Import File:</sp-field-label>
-            <input
-              id="file-input"
-              type="file"
-              accept=".txt,.html,.md,.markdown,.docx,.odt,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text"
-              @change=${this._onFileChange}
-            >
+      <sp-theme color="dark" scale="medium">
+        <div class="panel" role="dialog" aria-label="Settings">
+          <div class="close-row">
+            <sp-close-button class="close-button" @click=${this._onClose} quiet></sp-close-button>
           </div>
-        ` : html`
-          <div>
-            <sp-field-label for="url-input">URL to Load:</sp-field-label>
-            <sp-textfield id="url-input" type="url" .value=${this.url} @input=${this._onUrlInput}></sp-textfield>
-            <sp-button class="load-url" @click=${this._loadUrl}>Load Content</sp-button>
-          </div>
-        `}
-        <fieldset>
-          <legend>LLM Summary</legend>
-          <label>API Key
-            <input id="llm-key" type="password" .value=${this.llmConfig.apiKey} @input=${this._onApiKeyInput}>
-          </label>
-          <label>Model
-            <input id="llm-model" type="text" .value=${this.llmConfig.model} @input=${this._onModelInput}>
-          </label>
-          <label><input id="llm-summary" type="checkbox" .checked=${this.useLlmSummary} ?disabled=${!this.llmConfig.apiKey} @change=${this._onSummaryToggle}> Summarize text before reading</label>
-        </fieldset>
-        <fieldset>
-          <legend>Keyboard Shortcuts</legend>
-          <label>Play/Pause
-            <input id="kb-play" type="text" .value=${this.keybindings.playPause} @input=${(e: Event) => this._onKeybindingInput('playPause', e)}>
-          </label>
-          <label>Increase Speed
-            <input id="kb-inc" type="text" .value=${this.keybindings.increaseSpeed} @input=${(e: Event) => this._onKeybindingInput('increaseSpeed', e)}>
-          </label>
-          <label>Decrease Speed
-            <input id="kb-dec" type="text" .value=${this.keybindings.decreaseSpeed} @input=${(e: Event) => this._onKeybindingInput('decreaseSpeed', e)}>
-          </label>
-          <label>Rewind
-            <input id="kb-rew" type="text" .value=${this.keybindings.rewind} @input=${(e: Event) => this._onKeybindingInput('rewind', e)}>
-          </label>
-          <label>Fast Forward
-            <input id="kb-ff" type="text" .value=${this.keybindings.fastForward} @input=${(e: Event) => this._onKeybindingInput('fastForward', e)}>
-          </label>
-        </fieldset>
-        <fieldset>
-          <legend>Gestures</legend>
-          <label><input type="checkbox" .checked=${this.gestures.swipe} @change=${(e: Event) => this._onGestureToggle('swipe', e)}> Swipe Fast-Forward/Rewind</label>
-          <label><input type="checkbox" .checked=${this.gestures.taps} @change=${(e: Event) => this._onGestureToggle('taps', e)}> Tap Controls</label>
-          <label><input type="checkbox" .checked=${this.gestures.settingsSwipe} @change=${(e: Event) => this._onGestureToggle('settingsSwipe', e)}> Swipe Settings</label>
-        </fieldset>
-      </div>
+          <sp-accordion allow-multiple>
+            <sp-accordion-item label="Content" open>
+              <sp-tabs
+                selected=${pasteActive ? 'paste' : 'url'}
+                @change=${(e: Event) => { this.mode = (e.target as any).selected as 'paste' | 'url'; }}>
+                <sp-tab value="paste">Paste Text</sp-tab>
+              <sp-tab value="url">From URL</sp-tab>
+            </sp-tabs>
+            ${pasteActive ? html`
+              <div>
+                <sp-field-label for="text-input">Text to Display:</sp-field-label>
+                <sp-textfield
+                  multiline
+                  id="text-input"
+                  .value=${this.text}
+                  @input=${this._onTextInput}
+                  ?readonly=${this.mode === 'url'}
+                  aria-readonly=${this.mode === 'url'}
+                ></sp-textfield>
+                <sp-field-label for="file-input">Import File:</sp-field-label>
+                <input
+                  id="file-input"
+                  type="file"
+                  accept=".txt,.html,.md,.markdown,.docx,.odt,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text"
+                  @change=${this._onFileChange}
+                >
+              </div>
+            ` : html`
+              <div>
+                <sp-field-label for="url-input">URL to Load:</sp-field-label>
+                <sp-textfield id="url-input" type="url" .value=${this.url} @input=${this._onUrlInput}></sp-textfield>
+                <sp-button class="load-url" variant="primary" @click=${this._loadUrl}>Load Content</sp-button>
+              </div>
+            `}
+          </sp-accordion-item>
+          <sp-accordion-item label="Reading" open>
+            <label>Words Per Minute
+              <input
+                id="setting-wpm"
+                type="number"
+                min="100"
+                max="800"
+                .value=${String(this.wpm)}
+                @input=${this._onWpmInput}
+              >
+            </label>
+          </sp-accordion-item>
+          <sp-accordion-item label="LLM Summary">
+            <label>Provider
+              <select id="llm-provider" .value=${this.llmConfig.provider} @change=${(e: Event) => {
+                const target = e.target as HTMLSelectElement;
+                this.llmConfig = { ...this.llmConfig, provider: target.value as 'openrouter' | 'openai' };
+              }}>
+                <option value="openrouter">OpenRouter</option>
+                <option value="openai">OpenAI</option>
+              </select>
+            </label>
+            <label>API Key
+              <input id="llm-key" type="password" .value=${this.llmConfig.apiKey} @input=${this._onApiKeyInput}>
+            </label>
+            <label>Model
+              <input id="llm-model" type="text" .value=${this.llmConfig.model} @input=${this._onModelInput}>
+            </label>
+            <label><input id="llm-summary" type="checkbox" .checked=${this.useLlmSummary} ?disabled=${!this.llmConfig.apiKey} @change=${this._onSummaryToggle}> Summarize text before reading</label>
+          </sp-accordion-item>
+          <sp-accordion-item label="Shortcuts">
+            <label>Play/Pause
+              <input id="kb-play" type="text" .value=${this.keybindings.playPause} @input=${(e: Event) => this._onKeybindingInput('playPause', e)}>
+            </label>
+            <label>Increase Speed
+              <input id="kb-inc" type="text" .value=${this.keybindings.increaseSpeed} @input=${(e: Event) => this._onKeybindingInput('increaseSpeed', e)}>
+            </label>
+            <label>Decrease Speed
+              <input id="kb-dec" type="text" .value=${this.keybindings.decreaseSpeed} @input=${(e: Event) => this._onKeybindingInput('decreaseSpeed', e)}>
+            </label>
+            <label>Rewind
+              <input id="kb-rew" type="text" .value=${this.keybindings.rewind} @input=${(e: Event) => this._onKeybindingInput('rewind', e)}>
+            </label>
+            <label>Fast Forward
+              <input id="kb-ff" type="text" .value=${this.keybindings.fastForward} @input=${(e: Event) => this._onKeybindingInput('fastForward', e)}>
+            </label>
+          </sp-accordion-item>
+          <sp-accordion-item label="Gestures">
+            <label><input type="checkbox" .checked=${this.gestures.swipe} @change=${(e: Event) => this._onGestureToggle('swipe', e)}> Swipe Fast-Forward/Rewind</label>
+            <label><input type="checkbox" .checked=${this.gestures.taps} @change=${(e: Event) => this._onGestureToggle('taps', e)}> Tap Controls</label>
+            <label><input type="checkbox" .checked=${this.gestures.settingsSwipe} @change=${(e: Event) => this._onGestureToggle('settingsSwipe', e)}> Swipe Settings</label>
+          </sp-accordion-item>
+          </sp-accordion>
+        </div>
+      </sp-theme>
     `;
   }
 }

@@ -78,10 +78,9 @@ describe('RsvpSettings', () => {
 
     jest.spyOn(window as any, 'FileReader').mockRestore?.();
     Object.defineProperty(input, 'files', { value: [file] });
+    const wait = new Promise(resolve => el.addEventListener(CHANGE_EVENT, resolve));
     fireEvent.change(input);
-    await el.updateComplete;
-    await flush();
-    await flush();
+    await wait;
     const field = el.shadowRoot!.querySelector(TEXTFIELD_SELECTOR) as any;
     expect(field.value).toBe('Hello File');
   });
@@ -107,5 +106,39 @@ describe('RsvpSettings', () => {
     (global as any).fetch = fetchMock;
     await (el as any)._loadUrl();
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('emits wpm-change when wpm updated', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const input = el.shadowRoot!.querySelector('#setting-wpm') as HTMLInputElement;
+    const spy = jest.fn();
+    el.addEventListener('wpm-change', spy);
+    input.value = '350';
+    fireEvent.input(input);
+    await el.updateComplete;
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ detail: 350 }));
+  });
+
+  it('allows selecting llm provider', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const select = el.shadowRoot!.querySelector('#llm-provider') as HTMLSelectElement;
+    expect(select.value).toBe('openrouter');
+    select.value = 'openai';
+    fireEvent.change(select);
+    await el.updateComplete;
+    expect(el.llmConfig.provider).toBe('openai');
+  });
+
+  it('emits close event when button clicked', async () => {
+    const el = document.querySelector(TAG) as RsvpSettings;
+    await el.updateComplete;
+    const button = el.shadowRoot!.querySelector('.close-button') as HTMLElement;
+    const spy = jest.fn();
+    el.addEventListener('close', spy);
+    fireEvent.click(button);
+    await el.updateComplete;
+    expect(spy).toHaveBeenCalled();
   });
 });
